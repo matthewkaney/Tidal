@@ -180,7 +180,9 @@ drumN _ = 0
 
 -- Generated params
 
--- | a pattern of numbers that speed up (or slow down) samples while they play.
+-- ** accelerate
+-- $accelerate
+-- a pattern of numbers that speed up (or slow down) samples while they play.
 accelerate :: Pattern Double -> ControlPattern
 accelerate = pF "accelerate"
 accelerateTake :: String -> [Double] -> ControlPattern
@@ -195,7 +197,9 @@ acceleratebus busid pat = (pF "accelerate" pat) # (pI "^accelerate" busid)
 acceleraterecv :: Pattern Int -> ControlPattern
 acceleraterecv busid = pI "^accelerate" busid
 
--- | like @gain@, but linear.
+-- ** amp
+-- $amp
+-- like @gain@, but linear.
 amp :: Pattern Double -> ControlPattern
 amp = pF "amp"
 ampTake :: String -> [Double] -> ControlPattern
@@ -210,7 +214,7 @@ ampbus busid pat = (pF "amp" pat) # (pI "^amp" busid)
 amprecv :: Pattern Int -> ControlPattern
 amprecv busid = pI "^amp" busid
 
--- | 
+-- ** array
 array :: Pattern [Word8] -> ControlPattern
 array = pX "array"
 arrayTake :: String -> [Double] -> ControlPattern
@@ -220,7 +224,9 @@ arraybus busid pat = (pX "array" pat) # (pI "^array" busid)
 arrayrecv :: Pattern Int -> ControlPattern
 arrayrecv busid = pI "^array" busid
 
--- | a pattern of numbers to specify the attack time (in seconds) of an envelope applied to each sample.
+-- ** attack
+-- $attack
+-- a pattern of numbers to specify the attack time (in seconds) of an envelope applied to each sample.
 attack :: Pattern Double -> ControlPattern
 attack = pF "attack"
 attackTake :: String -> [Double] -> ControlPattern
@@ -235,7 +241,9 @@ attackbus busid pat = (pF "attack" pat) # (pI "^attack" busid)
 attackrecv :: Pattern Int -> ControlPattern
 attackrecv busid = pI "^attack" busid
 
--- | a pattern of numbers from 0 to 1. Sets the center frequency of the band-pass filter.
+-- ** bandf
+-- $bandf
+-- a pattern of numbers from 0 to 1. Sets the center frequency of the band-pass filter.
 bandf :: Pattern Double -> ControlPattern
 bandf = pF "bandf"
 bandfTake :: String -> [Double] -> ControlPattern
@@ -250,7 +258,9 @@ bandfbus busid pat = (pF "bandf" pat) # (pI "^bandf" busid)
 bandfrecv :: Pattern Int -> ControlPattern
 bandfrecv busid = pI "^bandf" busid
 
--- | a pattern of anumbers from 0 to 1. Sets the q-factor of the band-pass filter.
+-- ** bandq
+-- $bandq
+-- a pattern of anumbers from 0 to 1. Sets the q-factor of the band-pass filter.
 bandq :: Pattern Double -> ControlPattern
 bandq = pF "bandq"
 bandqTake :: String -> [Double] -> ControlPattern
@@ -265,7 +275,9 @@ bandqbus busid pat = (pF "bandq" pat) # (pI "^bandq" busid)
 bandqrecv :: Pattern Int -> ControlPattern
 bandqrecv busid = pI "^bandq" busid
 
--- | a pattern of numbers from 0 to 1. Skips the beginning of each sample, e.g. `0.25` to cut off the first quarter from each sample.
+-- ** begin
+-- $begin
+-- a pattern of numbers from 0 to 1. Skips the beginning of each sample, e.g. `0.25` to cut off the first quarter from each sample.
 begin :: Pattern Double -> ControlPattern
 begin = pF "begin"
 beginTake :: String -> [Double] -> ControlPattern
@@ -280,7 +292,9 @@ beginbus busid pat = (pF "begin" pat) # (pI "^begin" busid)
 beginrecv :: Pattern Int -> ControlPattern
 beginrecv busid = pI "^begin" busid
 
--- | Spectral binshift
+-- ** binshift
+-- $binshift
+-- Spectral binshift
 binshift :: Pattern Double -> ControlPattern
 binshift = pF "binshift"
 binshiftTake :: String -> [Double] -> ControlPattern
@@ -295,7 +309,7 @@ binshiftbus busid pat = (pF "binshift" pat) # (pI "^binshift" busid)
 binshiftrecv :: Pattern Int -> ControlPattern
 binshiftrecv busid = pI "^binshift" busid
 
--- | 
+-- ** button0
 button0 :: Pattern Double -> ControlPattern
 button0 = pF "button0"
 button0Take :: String -> [Double] -> ControlPattern
@@ -310,7 +324,7 @@ button0bus busid pat = (pF "button0" pat) # (pI "^button0" busid)
 button0recv :: Pattern Int -> ControlPattern
 button0recv busid = pI "^button0" busid
 
--- | 
+-- ** button1
 button1 :: Pattern Double -> ControlPattern
 button1 = pF "button1"
 button1Take :: String -> [Double] -> ControlPattern
@@ -325,7 +339,7 @@ button1bus busid pat = (pF "button1" pat) # (pI "^button1" busid)
 button1recv :: Pattern Int -> ControlPattern
 button1recv busid = pI "^button1" busid
 
--- | 
+-- ** button10
 button10 :: Pattern Double -> ControlPattern
 button10 = pF "button10"
 button10Take :: String -> [Double] -> ControlPattern
@@ -340,7 +354,7 @@ button10bus busid pat = (pF "button10" pat) # (pI "^button10" busid)
 button10recv :: Pattern Int -> ControlPattern
 button10recv busid = pI "^button10" busid
 
--- | 
+-- ** button11
 button11 :: Pattern Double -> ControlPattern
 button11 = pF "button11"
 button11Take :: String -> [Double] -> ControlPattern
@@ -355,7 +369,7 @@ button11bus busid pat = (pF "button11" pat) # (pI "^button11" busid)
 button11recv :: Pattern Int -> ControlPattern
 button11recv busid = pI "^button11" busid
 
--- | 
+-- ** button12
 button12 :: Pattern Double -> ControlPattern
 button12 = pF "button12"
 button12Take :: String -> [Double] -> ControlPattern
@@ -370,7 +384,7 @@ button12bus busid pat = (pF "button12" pat) # (pI "^button12" busid)
 button12recv :: Pattern Int -> ControlPattern
 button12recv busid = pI "^button12" busid
 
--- | 
+-- ** button13
 button13 :: Pattern Double -> ControlPattern
 button13 = pF "button13"
 button13Take :: String -> [Double] -> ControlPattern
@@ -385,7 +399,7 @@ button13bus busid pat = (pF "button13" pat) # (pI "^button13" busid)
 button13recv :: Pattern Int -> ControlPattern
 button13recv busid = pI "^button13" busid
 
--- | 
+-- ** button14
 button14 :: Pattern Double -> ControlPattern
 button14 = pF "button14"
 button14Take :: String -> [Double] -> ControlPattern
@@ -400,7 +414,7 @@ button14bus busid pat = (pF "button14" pat) # (pI "^button14" busid)
 button14recv :: Pattern Int -> ControlPattern
 button14recv busid = pI "^button14" busid
 
--- | 
+-- ** button15
 button15 :: Pattern Double -> ControlPattern
 button15 = pF "button15"
 button15Take :: String -> [Double] -> ControlPattern
@@ -415,7 +429,7 @@ button15bus busid pat = (pF "button15" pat) # (pI "^button15" busid)
 button15recv :: Pattern Int -> ControlPattern
 button15recv busid = pI "^button15" busid
 
--- | 
+-- ** button2
 button2 :: Pattern Double -> ControlPattern
 button2 = pF "button2"
 button2Take :: String -> [Double] -> ControlPattern
@@ -430,7 +444,7 @@ button2bus busid pat = (pF "button2" pat) # (pI "^button2" busid)
 button2recv :: Pattern Int -> ControlPattern
 button2recv busid = pI "^button2" busid
 
--- | 
+-- ** button3
 button3 :: Pattern Double -> ControlPattern
 button3 = pF "button3"
 button3Take :: String -> [Double] -> ControlPattern
@@ -445,7 +459,7 @@ button3bus busid pat = (pF "button3" pat) # (pI "^button3" busid)
 button3recv :: Pattern Int -> ControlPattern
 button3recv busid = pI "^button3" busid
 
--- | 
+-- ** button4
 button4 :: Pattern Double -> ControlPattern
 button4 = pF "button4"
 button4Take :: String -> [Double] -> ControlPattern
@@ -460,7 +474,7 @@ button4bus busid pat = (pF "button4" pat) # (pI "^button4" busid)
 button4recv :: Pattern Int -> ControlPattern
 button4recv busid = pI "^button4" busid
 
--- | 
+-- ** button5
 button5 :: Pattern Double -> ControlPattern
 button5 = pF "button5"
 button5Take :: String -> [Double] -> ControlPattern
@@ -475,7 +489,7 @@ button5bus busid pat = (pF "button5" pat) # (pI "^button5" busid)
 button5recv :: Pattern Int -> ControlPattern
 button5recv busid = pI "^button5" busid
 
--- | 
+-- ** button6
 button6 :: Pattern Double -> ControlPattern
 button6 = pF "button6"
 button6Take :: String -> [Double] -> ControlPattern
@@ -490,7 +504,7 @@ button6bus busid pat = (pF "button6" pat) # (pI "^button6" busid)
 button6recv :: Pattern Int -> ControlPattern
 button6recv busid = pI "^button6" busid
 
--- | 
+-- ** button7
 button7 :: Pattern Double -> ControlPattern
 button7 = pF "button7"
 button7Take :: String -> [Double] -> ControlPattern
@@ -505,7 +519,7 @@ button7bus busid pat = (pF "button7" pat) # (pI "^button7" busid)
 button7recv :: Pattern Int -> ControlPattern
 button7recv busid = pI "^button7" busid
 
--- | 
+-- ** button8
 button8 :: Pattern Double -> ControlPattern
 button8 = pF "button8"
 button8Take :: String -> [Double] -> ControlPattern
@@ -520,7 +534,7 @@ button8bus busid pat = (pF "button8" pat) # (pI "^button8" busid)
 button8recv :: Pattern Int -> ControlPattern
 button8recv busid = pI "^button8" busid
 
--- | 
+-- ** button9
 button9 :: Pattern Double -> ControlPattern
 button9 = pF "button9"
 button9Take :: String -> [Double] -> ControlPattern
@@ -535,7 +549,7 @@ button9bus busid pat = (pF "button9" pat) # (pI "^button9" busid)
 button9recv :: Pattern Int -> ControlPattern
 button9recv busid = pI "^button9" busid
 
--- | 
+-- ** ccn
 ccn :: Pattern Double -> ControlPattern
 ccn = pF "ccn"
 ccnTake :: String -> [Double] -> ControlPattern
@@ -550,7 +564,7 @@ ccnbus busid pat = (pF "ccn" pat) # (pI "^ccn" busid)
 ccnrecv :: Pattern Int -> ControlPattern
 ccnrecv busid = pI "^ccn" busid
 
--- | 
+-- ** ccv
 ccv :: Pattern Double -> ControlPattern
 ccv = pF "ccv"
 ccvTake :: String -> [Double] -> ControlPattern
@@ -565,7 +579,9 @@ ccvbus busid pat = (pF "ccv" pat) # (pI "^ccv" busid)
 ccvrecv :: Pattern Int -> ControlPattern
 ccvrecv busid = pI "^ccv" busid
 
--- | choose the channel the pattern is sent to in superdirt
+-- ** channel
+-- $channel
+-- choose the channel the pattern is sent to in superdirt
 channel :: Pattern Int -> ControlPattern
 channel = pI "channel"
 channelTake :: String -> [Double] -> ControlPattern
@@ -578,7 +594,7 @@ channelCountTo name ipat = innerJoin $ (\i -> pStateF "channel" name (maybe 0 ((
 channelbus :: Pattern Int -> Pattern Int -> ControlPattern
 channelbus _ _ = error $ "Control parameter 'channel' can't be sent to a bus."
 
--- | 
+-- ** clhatdecay
 clhatdecay :: Pattern Double -> ControlPattern
 clhatdecay = pF "clhatdecay"
 clhatdecayTake :: String -> [Double] -> ControlPattern
@@ -593,7 +609,9 @@ clhatdecaybus busid pat = (pF "clhatdecay" pat) # (pI "^clhatdecay" busid)
 clhatdecayrecv :: Pattern Int -> ControlPattern
 clhatdecayrecv busid = pI "^clhatdecay" busid
 
--- | fake-resampling, a pattern of numbers for lowering the sample rate, i.e. 1 for original 2 for half, 3 for a third and so on.
+-- ** coarse
+-- $coarse
+-- fake-resampling, a pattern of numbers for lowering the sample rate, i.e. 1 for original 2 for half, 3 for a third and so on.
 coarse :: Pattern Double -> ControlPattern
 coarse = pF "coarse"
 coarseTake :: String -> [Double] -> ControlPattern
@@ -608,7 +626,9 @@ coarsebus busid pat = (pF "coarse" pat) # (pI "^coarse" busid)
 coarserecv :: Pattern Int -> ControlPattern
 coarserecv busid = pI "^coarse" busid
 
--- | Spectral comb
+-- ** comb
+-- $comb
+-- Spectral comb
 comb :: Pattern Double -> ControlPattern
 comb = pF "comb"
 combTake :: String -> [Double] -> ControlPattern
@@ -623,7 +643,7 @@ combbus busid pat = (pF "comb" pat) # (pI "^comb" busid)
 combrecv :: Pattern Int -> ControlPattern
 combrecv busid = pI "^comb" busid
 
--- | 
+-- ** control
 control :: Pattern Double -> ControlPattern
 control = pF "control"
 controlTake :: String -> [Double] -> ControlPattern
@@ -638,7 +658,7 @@ controlbus busid pat = (pF "control" pat) # (pI "^control" busid)
 controlrecv :: Pattern Int -> ControlPattern
 controlrecv busid = pI "^control" busid
 
--- | 
+-- ** cps
 cps :: Pattern Double -> ControlPattern
 cps = pF "cps"
 cpsTake :: String -> [Double] -> ControlPattern
@@ -653,7 +673,9 @@ cpsbus busid pat = (pF "cps" pat) # (pI "^cps" busid)
 cpsrecv :: Pattern Int -> ControlPattern
 cpsrecv busid = pI "^cps" busid
 
--- | bit crushing, a pattern of numbers from 1 (for drastic reduction in bit-depth) to 16 (for barely no reduction).
+-- ** crush
+-- $crush
+-- bit crushing, a pattern of numbers from 1 (for drastic reduction in bit-depth) to 16 (for barely no reduction).
 crush :: Pattern Double -> ControlPattern
 crush = pF "crush"
 crushTake :: String -> [Double] -> ControlPattern
@@ -668,7 +690,7 @@ crushbus busid pat = (pF "crush" pat) # (pI "^crush" busid)
 crushrecv :: Pattern Int -> ControlPattern
 crushrecv busid = pI "^crush" busid
 
--- | 
+-- ** ctlNum
 ctlNum :: Pattern Double -> ControlPattern
 ctlNum = pF "ctlNum"
 ctlNumTake :: String -> [Double] -> ControlPattern
@@ -683,7 +705,7 @@ ctlNumbus busid pat = (pF "ctlNum" pat) # (pI "^ctlNum" busid)
 ctlNumrecv :: Pattern Int -> ControlPattern
 ctlNumrecv busid = pI "^ctlNum" busid
 
--- | 
+-- ** ctranspose
 ctranspose :: Pattern Double -> ControlPattern
 ctranspose = pF "ctranspose"
 ctransposeTake :: String -> [Double] -> ControlPattern
@@ -698,7 +720,9 @@ ctransposebus busid pat = (pF "ctranspose" pat) # (pI "^ctranspose" busid)
 ctransposerecv :: Pattern Int -> ControlPattern
 ctransposerecv busid = pI "^ctranspose" busid
 
--- | In the style of classic drum-machines, `cut` will stop a playing sample as soon as another samples with in same cutgroup is to be played. An example would be an open hi-hat followed by a closed one, essentially muting the open.
+-- ** cut
+-- $cut
+-- In the style of classic drum-machines, `cut` will stop a playing sample as soon as another samples with in same cutgroup is to be played. An example would be an open hi-hat followed by a closed one, essentially muting the open.
 cut :: Pattern Int -> ControlPattern
 cut = pI "cut"
 cutTake :: String -> [Double] -> ControlPattern
@@ -713,7 +737,9 @@ cutbus busid pat = (pI "cut" pat) # (pI "^cut" busid)
 cutrecv :: Pattern Int -> ControlPattern
 cutrecv busid = pI "^cut" busid
 
--- | a pattern of numbers from 0 to 1. Applies the cutoff frequency of the low-pass filter.
+-- ** cutoff
+-- $cutoff
+-- a pattern of numbers from 0 to 1. Applies the cutoff frequency of the low-pass filter.
 cutoff :: Pattern Double -> ControlPattern
 cutoff = pF "cutoff"
 cutoffTake :: String -> [Double] -> ControlPattern
@@ -728,7 +754,7 @@ cutoffbus busid pat = (pF "cutoff" pat) # (pI "^cutoff" busid)
 cutoffrecv :: Pattern Int -> ControlPattern
 cutoffrecv busid = pI "^cutoff" busid
 
--- | 
+-- ** cutoffegint
 cutoffegint :: Pattern Double -> ControlPattern
 cutoffegint = pF "cutoffegint"
 cutoffegintTake :: String -> [Double] -> ControlPattern
@@ -743,7 +769,7 @@ cutoffegintbus busid pat = (pF "cutoffegint" pat) # (pI "^cutoffegint" busid)
 cutoffegintrecv :: Pattern Int -> ControlPattern
 cutoffegintrecv busid = pI "^cutoffegint" busid
 
--- | 
+-- ** decay
 decay :: Pattern Double -> ControlPattern
 decay = pF "decay"
 decayTake :: String -> [Double] -> ControlPattern
@@ -758,7 +784,7 @@ decaybus busid pat = (pF "decay" pat) # (pI "^decay" busid)
 decayrecv :: Pattern Int -> ControlPattern
 decayrecv busid = pI "^decay" busid
 
--- | 
+-- ** degree
 degree :: Pattern Double -> ControlPattern
 degree = pF "degree"
 degreeTake :: String -> [Double] -> ControlPattern
@@ -773,7 +799,9 @@ degreebus busid pat = (pF "degree" pat) # (pI "^degree" busid)
 degreerecv :: Pattern Int -> ControlPattern
 degreerecv busid = pI "^degree" busid
 
--- | a pattern of numbers from 0 to 1. Sets the level of the delay signal.
+-- ** delay
+-- $delay
+-- a pattern of numbers from 0 to 1. Sets the level of the delay signal.
 delay :: Pattern Double -> ControlPattern
 delay = pF "delay"
 delayTake :: String -> [Double] -> ControlPattern
@@ -788,7 +816,9 @@ delaybus busid pat = (pF "delay" pat) # (pI "^delay" busid)
 delayrecv :: Pattern Int -> ControlPattern
 delayrecv busid = pI "^delay" busid
 
--- | a pattern of numbers from 0 to 1. Sets the amount of delay feedback.
+-- ** delayfeedback
+-- $delayfeedback
+-- a pattern of numbers from 0 to 1. Sets the amount of delay feedback.
 delayfeedback :: Pattern Double -> ControlPattern
 delayfeedback = pF "delayfeedback"
 delayfeedbackTake :: String -> [Double] -> ControlPattern
@@ -803,7 +833,9 @@ delayfeedbackbus busid pat = (pF "delayfeedback" pat) # (pI "^delayfeedback" bus
 delayfeedbackrecv :: Pattern Int -> ControlPattern
 delayfeedbackrecv busid = pI "^delayfeedback" busid
 
--- | a pattern of numbers from 0 to 1. Sets the length of the delay.
+-- ** delaytime
+-- $delaytime
+-- a pattern of numbers from 0 to 1. Sets the length of the delay.
 delaytime :: Pattern Double -> ControlPattern
 delaytime = pF "delaytime"
 delaytimeTake :: String -> [Double] -> ControlPattern
@@ -818,7 +850,7 @@ delaytimebus busid pat = (pF "delaytime" pat) # (pI "^delaytime" busid)
 delaytimerecv :: Pattern Int -> ControlPattern
 delaytimerecv busid = pI "^delaytime" busid
 
--- | 
+-- ** detune
 detune :: Pattern Double -> ControlPattern
 detune = pF "detune"
 detuneTake :: String -> [Double] -> ControlPattern
@@ -833,7 +865,9 @@ detunebus busid pat = (pF "detune" pat) # (pI "^detune" busid)
 detunerecv :: Pattern Int -> ControlPattern
 detunerecv busid = pI "^detune" busid
 
--- | noisy fuzzy distortion
+-- ** distort
+-- $distort
+-- noisy fuzzy distortion
 distort :: Pattern Double -> ControlPattern
 distort = pF "distort"
 distortTake :: String -> [Double] -> ControlPattern
@@ -848,7 +882,9 @@ distortbus busid pat = (pF "distort" pat) # (pI "^distort" busid)
 distortrecv :: Pattern Int -> ControlPattern
 distortrecv busid = pI "^distort" busid
 
--- | DJ filter, below 0.5 is low pass filter, above is high pass filter.
+-- ** djf
+-- $djf
+-- DJ filter, below 0.5 is low pass filter, above is high pass filter.
 djf :: Pattern Double -> ControlPattern
 djf = pF "djf"
 djfTake :: String -> [Double] -> ControlPattern
@@ -863,7 +899,9 @@ djfbus busid pat = (pF "djf" pat) # (pI "^djf" busid)
 djfrecv :: Pattern Int -> ControlPattern
 djfrecv busid = pI "^djf" busid
 
--- | when set to `1` will disable all reverb for this pattern. See `room` and `size` for more information about reverb.
+-- ** dry
+-- $dry
+-- when set to `1` will disable all reverb for this pattern. See `room` and `size` for more information about reverb.
 dry :: Pattern Double -> ControlPattern
 dry = pF "dry"
 dryTake :: String -> [Double] -> ControlPattern
@@ -878,7 +916,7 @@ drybus busid pat = (pF "dry" pat) # (pI "^dry" busid)
 dryrecv :: Pattern Int -> ControlPattern
 dryrecv busid = pI "^dry" busid
 
--- | 
+-- ** dur
 dur :: Pattern Double -> ControlPattern
 dur = pF "dur"
 durTake :: String -> [Double] -> ControlPattern
@@ -893,7 +931,9 @@ durbus busid pat = (pF "dur" pat) # (pI "^dur" busid)
 durrecv :: Pattern Int -> ControlPattern
 durrecv busid = pI "^dur" busid
 
--- | the same as `begin`, but cuts the end off samples, shortening them; e.g. `0.75` to cut off the last quarter of each sample.
+-- ** end
+-- $end
+-- the same as `begin`, but cuts the end off samples, shortening them; e.g. `0.75` to cut off the last quarter of each sample.
 end :: Pattern Double -> ControlPattern
 end = pF "end"
 endTake :: String -> [Double] -> ControlPattern
@@ -906,7 +946,9 @@ endCountTo name ipat = innerJoin $ (\i -> pStateF "end" name (maybe 0 ((`mod'` i
 endbus :: Pattern Int -> Pattern Double -> ControlPattern
 endbus _ _ = error $ "Control parameter 'end' can't be sent to a bus."
 
--- | Spectral enhance
+-- ** enhance
+-- $enhance
+-- Spectral enhance
 enhance :: Pattern Double -> ControlPattern
 enhance = pF "enhance"
 enhanceTake :: String -> [Double] -> ControlPattern
@@ -921,7 +963,7 @@ enhancebus busid pat = (pF "enhance" pat) # (pI "^enhance" busid)
 enhancerecv :: Pattern Int -> ControlPattern
 enhancerecv busid = pI "^enhance" busid
 
--- | 
+-- ** expression
 expression :: Pattern Double -> ControlPattern
 expression = pF "expression"
 expressionTake :: String -> [Double] -> ControlPattern
@@ -936,7 +978,7 @@ expressionbus busid pat = (pF "expression" pat) # (pI "^expression" busid)
 expressionrecv :: Pattern Int -> ControlPattern
 expressionrecv busid = pI "^expression" busid
 
--- | 
+-- ** frameRate
 frameRate :: Pattern Double -> ControlPattern
 frameRate = pF "frameRate"
 frameRateTake :: String -> [Double] -> ControlPattern
@@ -951,7 +993,7 @@ frameRatebus busid pat = (pF "frameRate" pat) # (pI "^frameRate" busid)
 frameRaterecv :: Pattern Int -> ControlPattern
 frameRaterecv busid = pI "^frameRate" busid
 
--- | 
+-- ** frames
 frames :: Pattern Double -> ControlPattern
 frames = pF "frames"
 framesTake :: String -> [Double] -> ControlPattern
@@ -966,7 +1008,9 @@ framesbus busid pat = (pF "frames" pat) # (pI "^frames" busid)
 framesrecv :: Pattern Int -> ControlPattern
 framesrecv busid = pI "^frames" busid
 
--- | Spectral freeze
+-- ** freeze
+-- $freeze
+-- Spectral freeze
 freeze :: Pattern Double -> ControlPattern
 freeze = pF "freeze"
 freezeTake :: String -> [Double] -> ControlPattern
@@ -981,7 +1025,7 @@ freezebus busid pat = (pF "freeze" pat) # (pI "^freeze" busid)
 freezerecv :: Pattern Int -> ControlPattern
 freezerecv busid = pI "^freeze" busid
 
--- | 
+-- ** freq
 freq :: Pattern Double -> ControlPattern
 freq = pF "freq"
 freqTake :: String -> [Double] -> ControlPattern
@@ -996,7 +1040,9 @@ freqbus busid pat = (pF "freq" pat) # (pI "^freq" busid)
 freqrecv :: Pattern Int -> ControlPattern
 freqrecv busid = pI "^freq" busid
 
--- | for internal sound routing
+-- ** from
+-- $from
+-- for internal sound routing
 from :: Pattern Double -> ControlPattern
 from = pF "from"
 fromTake :: String -> [Double] -> ControlPattern
@@ -1011,7 +1057,9 @@ frombus busid pat = (pF "from" pat) # (pI "^from" busid)
 fromrecv :: Pattern Int -> ControlPattern
 fromrecv busid = pI "^from" busid
 
--- | frequency shifter
+-- ** fshift
+-- $fshift
+-- frequency shifter
 fshift :: Pattern Double -> ControlPattern
 fshift = pF "fshift"
 fshiftTake :: String -> [Double] -> ControlPattern
@@ -1026,7 +1074,9 @@ fshiftbus busid pat = (pF "fshift" pat) # (pI "^fshift" busid)
 fshiftrecv :: Pattern Int -> ControlPattern
 fshiftrecv busid = pI "^fshift" busid
 
--- | frequency shifter
+-- ** fshiftnote
+-- $fshiftnote
+-- frequency shifter
 fshiftnote :: Pattern Double -> ControlPattern
 fshiftnote = pF "fshiftnote"
 fshiftnoteTake :: String -> [Double] -> ControlPattern
@@ -1041,7 +1091,9 @@ fshiftnotebus busid pat = (pF "fshiftnote" pat) # (pI "^fshiftnote" busid)
 fshiftnoterecv :: Pattern Int -> ControlPattern
 fshiftnoterecv busid = pI "^fshiftnote" busid
 
--- | frequency shifter
+-- ** fshiftphase
+-- $fshiftphase
+-- frequency shifter
 fshiftphase :: Pattern Double -> ControlPattern
 fshiftphase = pF "fshiftphase"
 fshiftphaseTake :: String -> [Double] -> ControlPattern
@@ -1056,7 +1108,9 @@ fshiftphasebus busid pat = (pF "fshiftphase" pat) # (pI "^fshiftphase" busid)
 fshiftphaserecv :: Pattern Int -> ControlPattern
 fshiftphaserecv busid = pI "^fshiftphase" busid
 
--- | a pattern of numbers that specify volume. Values less than 1 make the sound quieter. Values greater than 1 make the sound louder. For the linear equivalent, see @amp@.
+-- ** gain
+-- $gain
+-- a pattern of numbers that specify volume. Values less than 1 make the sound quieter. Values greater than 1 make the sound louder. For the linear equivalent, see @amp@.
 gain :: Pattern Double -> ControlPattern
 gain = pF "gain"
 gainTake :: String -> [Double] -> ControlPattern
@@ -1069,7 +1123,7 @@ gainCountTo name ipat = innerJoin $ (\i -> pStateF "gain" name (maybe 0 ((`mod'`
 gainbus :: Pattern Int -> Pattern Double -> ControlPattern
 gainbus _ _ = error $ "Control parameter 'gain' can't be sent to a bus."
 
--- | 
+-- ** gate
 gate :: Pattern Double -> ControlPattern
 gate = pF "gate"
 gateTake :: String -> [Double] -> ControlPattern
@@ -1084,7 +1138,7 @@ gatebus busid pat = (pF "gate" pat) # (pI "^gate" busid)
 gaterecv :: Pattern Int -> ControlPattern
 gaterecv busid = pI "^gate" busid
 
--- | 
+-- ** harmonic
 harmonic :: Pattern Double -> ControlPattern
 harmonic = pF "harmonic"
 harmonicTake :: String -> [Double] -> ControlPattern
@@ -1099,7 +1153,7 @@ harmonicbus busid pat = (pF "harmonic" pat) # (pI "^harmonic" busid)
 harmonicrecv :: Pattern Int -> ControlPattern
 harmonicrecv busid = pI "^harmonic" busid
 
--- | 
+-- ** hatgrain
 hatgrain :: Pattern Double -> ControlPattern
 hatgrain = pF "hatgrain"
 hatgrainTake :: String -> [Double] -> ControlPattern
@@ -1114,7 +1168,9 @@ hatgrainbus busid pat = (pF "hatgrain" pat) # (pI "^hatgrain" busid)
 hatgrainrecv :: Pattern Int -> ControlPattern
 hatgrainrecv busid = pI "^hatgrain" busid
 
--- | High pass sort of spectral filter
+-- ** hbrick
+-- $hbrick
+-- High pass sort of spectral filter
 hbrick :: Pattern Double -> ControlPattern
 hbrick = pF "hbrick"
 hbrickTake :: String -> [Double] -> ControlPattern
@@ -1129,7 +1185,9 @@ hbrickbus busid pat = (pF "hbrick" pat) # (pI "^hbrick" busid)
 hbrickrecv :: Pattern Int -> ControlPattern
 hbrickrecv busid = pI "^hbrick" busid
 
--- | a pattern of numbers from 0 to 1. Applies the cutoff frequency of the high-pass filter. Also has alias @hpf@
+-- ** hcutoff
+-- $hcutoff
+-- a pattern of numbers from 0 to 1. Applies the cutoff frequency of the high-pass filter. Also has alias @hpf@
 hcutoff :: Pattern Double -> ControlPattern
 hcutoff = pF "hcutoff"
 hcutoffTake :: String -> [Double] -> ControlPattern
@@ -1144,7 +1202,9 @@ hcutoffbus busid pat = (pF "hcutoff" pat) # (pI "^hcutoff" busid)
 hcutoffrecv :: Pattern Int -> ControlPattern
 hcutoffrecv busid = pI "^hcutoff" busid
 
--- | a pattern of numbers to specify the hold time (in seconds) of an envelope applied to each sample. Only takes effect if `attack` and `release` are also specified.
+-- ** hold
+-- $hold
+-- a pattern of numbers to specify the hold time (in seconds) of an envelope applied to each sample. Only takes effect if `attack` and `release` are also specified.
 hold :: Pattern Double -> ControlPattern
 hold = pF "hold"
 holdTake :: String -> [Double] -> ControlPattern
@@ -1159,7 +1219,7 @@ holdbus busid pat = (pF "hold" pat) # (pI "^hold" busid)
 holdrecv :: Pattern Int -> ControlPattern
 holdrecv busid = pI "^hold" busid
 
--- | 
+-- ** hours
 hours :: Pattern Double -> ControlPattern
 hours = pF "hours"
 hoursTake :: String -> [Double] -> ControlPattern
@@ -1174,7 +1234,9 @@ hoursbus busid pat = (pF "hours" pat) # (pI "^hours" busid)
 hoursrecv :: Pattern Int -> ControlPattern
 hoursrecv busid = pI "^hours" busid
 
--- | a pattern of numbers from 0 to 1. Applies the resonance of the high-pass filter. Has alias @hpq@
+-- ** hresonance
+-- $hresonance
+-- a pattern of numbers from 0 to 1. Applies the resonance of the high-pass filter. Has alias @hpq@
 hresonance :: Pattern Double -> ControlPattern
 hresonance = pF "hresonance"
 hresonanceTake :: String -> [Double] -> ControlPattern
@@ -1189,7 +1251,7 @@ hresonancebus busid pat = (pF "hresonance" pat) # (pI "^hresonance" busid)
 hresonancerecv :: Pattern Int -> ControlPattern
 hresonancerecv busid = pI "^hresonance" busid
 
--- | 
+-- ** imag
 imag :: Pattern Double -> ControlPattern
 imag = pF "imag"
 imagTake :: String -> [Double] -> ControlPattern
@@ -1204,7 +1266,7 @@ imagbus busid pat = (pF "imag" pat) # (pI "^imag" busid)
 imagrecv :: Pattern Int -> ControlPattern
 imagrecv busid = pI "^imag" busid
 
--- | 
+-- ** kcutoff
 kcutoff :: Pattern Double -> ControlPattern
 kcutoff = pF "kcutoff"
 kcutoffTake :: String -> [Double] -> ControlPattern
@@ -1219,7 +1281,9 @@ kcutoffbus busid pat = (pF "kcutoff" pat) # (pI "^kcutoff" busid)
 kcutoffrecv :: Pattern Int -> ControlPattern
 kcutoffrecv busid = pI "^kcutoff" busid
 
--- | shape/bass enhancer
+-- ** krush
+-- $krush
+-- shape/bass enhancer
 krush :: Pattern Double -> ControlPattern
 krush = pF "krush"
 krushTake :: String -> [Double] -> ControlPattern
@@ -1234,7 +1298,7 @@ krushbus busid pat = (pF "krush" pat) # (pI "^krush" busid)
 krushrecv :: Pattern Int -> ControlPattern
 krushrecv busid = pI "^krush" busid
 
--- | 
+-- ** lagogo
 lagogo :: Pattern Double -> ControlPattern
 lagogo = pF "lagogo"
 lagogoTake :: String -> [Double] -> ControlPattern
@@ -1249,7 +1313,9 @@ lagogobus busid pat = (pF "lagogo" pat) # (pI "^lagogo" busid)
 lagogorecv :: Pattern Int -> ControlPattern
 lagogorecv busid = pI "^lagogo" busid
 
--- | Low pass sort of spectral filter
+-- ** lbrick
+-- $lbrick
+-- Low pass sort of spectral filter
 lbrick :: Pattern Double -> ControlPattern
 lbrick = pF "lbrick"
 lbrickTake :: String -> [Double] -> ControlPattern
@@ -1264,7 +1330,7 @@ lbrickbus busid pat = (pF "lbrick" pat) # (pI "^lbrick" busid)
 lbrickrecv :: Pattern Int -> ControlPattern
 lbrickrecv busid = pI "^lbrick" busid
 
--- | 
+-- ** lclap
 lclap :: Pattern Double -> ControlPattern
 lclap = pF "lclap"
 lclapTake :: String -> [Double] -> ControlPattern
@@ -1279,7 +1345,7 @@ lclapbus busid pat = (pF "lclap" pat) # (pI "^lclap" busid)
 lclaprecv :: Pattern Int -> ControlPattern
 lclaprecv busid = pI "^lclap" busid
 
--- | 
+-- ** lclaves
 lclaves :: Pattern Double -> ControlPattern
 lclaves = pF "lclaves"
 lclavesTake :: String -> [Double] -> ControlPattern
@@ -1294,7 +1360,7 @@ lclavesbus busid pat = (pF "lclaves" pat) # (pI "^lclaves" busid)
 lclavesrecv :: Pattern Int -> ControlPattern
 lclavesrecv busid = pI "^lclaves" busid
 
--- | 
+-- ** lclhat
 lclhat :: Pattern Double -> ControlPattern
 lclhat = pF "lclhat"
 lclhatTake :: String -> [Double] -> ControlPattern
@@ -1309,7 +1375,7 @@ lclhatbus busid pat = (pF "lclhat" pat) # (pI "^lclhat" busid)
 lclhatrecv :: Pattern Int -> ControlPattern
 lclhatrecv busid = pI "^lclhat" busid
 
--- | 
+-- ** lcrash
 lcrash :: Pattern Double -> ControlPattern
 lcrash = pF "lcrash"
 lcrashTake :: String -> [Double] -> ControlPattern
@@ -1324,7 +1390,9 @@ lcrashbus busid pat = (pF "lcrash" pat) # (pI "^lcrash" busid)
 lcrashrecv :: Pattern Int -> ControlPattern
 lcrashrecv busid = pI "^lcrash" busid
 
--- | controls the amount of overlap between two adjacent sounds
+-- ** legato
+-- $legato
+-- controls the amount of overlap between two adjacent sounds
 legato :: Pattern Double -> ControlPattern
 legato = pF "legato"
 legatoTake :: String -> [Double] -> ControlPattern
@@ -1337,7 +1405,7 @@ legatoCountTo name ipat = innerJoin $ (\i -> pStateF "legato" name (maybe 0 ((`m
 legatobus :: Pattern Int -> Pattern Double -> ControlPattern
 legatobus _ _ = error $ "Control parameter 'legato' can't be sent to a bus."
 
--- | 
+-- ** leslie
 leslie :: Pattern Double -> ControlPattern
 leslie = pF "leslie"
 leslieTake :: String -> [Double] -> ControlPattern
@@ -1352,7 +1420,7 @@ lesliebus busid pat = (pF "leslie" pat) # (pI "^leslie" busid)
 leslierecv :: Pattern Int -> ControlPattern
 leslierecv busid = pI "^leslie" busid
 
--- | 
+-- ** lfo
 lfo :: Pattern Double -> ControlPattern
 lfo = pF "lfo"
 lfoTake :: String -> [Double] -> ControlPattern
@@ -1367,7 +1435,7 @@ lfobus busid pat = (pF "lfo" pat) # (pI "^lfo" busid)
 lforecv :: Pattern Int -> ControlPattern
 lforecv busid = pI "^lfo" busid
 
--- | 
+-- ** lfocutoffint
 lfocutoffint :: Pattern Double -> ControlPattern
 lfocutoffint = pF "lfocutoffint"
 lfocutoffintTake :: String -> [Double] -> ControlPattern
@@ -1382,7 +1450,7 @@ lfocutoffintbus busid pat = (pF "lfocutoffint" pat) # (pI "^lfocutoffint" busid)
 lfocutoffintrecv :: Pattern Int -> ControlPattern
 lfocutoffintrecv busid = pI "^lfocutoffint" busid
 
--- | 
+-- ** lfodelay
 lfodelay :: Pattern Double -> ControlPattern
 lfodelay = pF "lfodelay"
 lfodelayTake :: String -> [Double] -> ControlPattern
@@ -1397,7 +1465,7 @@ lfodelaybus busid pat = (pF "lfodelay" pat) # (pI "^lfodelay" busid)
 lfodelayrecv :: Pattern Int -> ControlPattern
 lfodelayrecv busid = pI "^lfodelay" busid
 
--- | 
+-- ** lfoint
 lfoint :: Pattern Double -> ControlPattern
 lfoint = pF "lfoint"
 lfointTake :: String -> [Double] -> ControlPattern
@@ -1412,7 +1480,7 @@ lfointbus busid pat = (pF "lfoint" pat) # (pI "^lfoint" busid)
 lfointrecv :: Pattern Int -> ControlPattern
 lfointrecv busid = pI "^lfoint" busid
 
--- | 
+-- ** lfopitchint
 lfopitchint :: Pattern Double -> ControlPattern
 lfopitchint = pF "lfopitchint"
 lfopitchintTake :: String -> [Double] -> ControlPattern
@@ -1427,7 +1495,7 @@ lfopitchintbus busid pat = (pF "lfopitchint" pat) # (pI "^lfopitchint" busid)
 lfopitchintrecv :: Pattern Int -> ControlPattern
 lfopitchintrecv busid = pI "^lfopitchint" busid
 
--- | 
+-- ** lfoshape
 lfoshape :: Pattern Double -> ControlPattern
 lfoshape = pF "lfoshape"
 lfoshapeTake :: String -> [Double] -> ControlPattern
@@ -1442,7 +1510,7 @@ lfoshapebus busid pat = (pF "lfoshape" pat) # (pI "^lfoshape" busid)
 lfoshaperecv :: Pattern Int -> ControlPattern
 lfoshaperecv busid = pI "^lfoshape" busid
 
--- | 
+-- ** lfosync
 lfosync :: Pattern Double -> ControlPattern
 lfosync = pF "lfosync"
 lfosyncTake :: String -> [Double] -> ControlPattern
@@ -1457,7 +1525,7 @@ lfosyncbus busid pat = (pF "lfosync" pat) # (pI "^lfosync" busid)
 lfosyncrecv :: Pattern Int -> ControlPattern
 lfosyncrecv busid = pI "^lfosync" busid
 
--- | 
+-- ** lhitom
 lhitom :: Pattern Double -> ControlPattern
 lhitom = pF "lhitom"
 lhitomTake :: String -> [Double] -> ControlPattern
@@ -1472,7 +1540,7 @@ lhitombus busid pat = (pF "lhitom" pat) # (pI "^lhitom" busid)
 lhitomrecv :: Pattern Int -> ControlPattern
 lhitomrecv busid = pI "^lhitom" busid
 
--- | 
+-- ** lkick
 lkick :: Pattern Double -> ControlPattern
 lkick = pF "lkick"
 lkickTake :: String -> [Double] -> ControlPattern
@@ -1487,7 +1555,7 @@ lkickbus busid pat = (pF "lkick" pat) # (pI "^lkick" busid)
 lkickrecv :: Pattern Int -> ControlPattern
 lkickrecv busid = pI "^lkick" busid
 
--- | 
+-- ** llotom
 llotom :: Pattern Double -> ControlPattern
 llotom = pF "llotom"
 llotomTake :: String -> [Double] -> ControlPattern
@@ -1502,7 +1570,9 @@ llotombus busid pat = (pF "llotom" pat) # (pI "^llotom" busid)
 llotomrecv :: Pattern Int -> ControlPattern
 llotomrecv busid = pI "^llotom" busid
 
--- | A pattern of numbers. Specifies whether delaytime is calculated relative to cps. When set to 1, delaytime is a direct multiple of a cycle.
+-- ** lock
+-- $lock
+-- A pattern of numbers. Specifies whether delaytime is calculated relative to cps. When set to 1, delaytime is a direct multiple of a cycle.
 lock :: Pattern Double -> ControlPattern
 lock = pF "lock"
 lockTake :: String -> [Double] -> ControlPattern
@@ -1517,7 +1587,9 @@ lockbus busid pat = (pF "lock" pat) # (pI "^lock" busid)
 lockrecv :: Pattern Int -> ControlPattern
 lockrecv busid = pI "^lock" busid
 
--- | loops the sample (from `begin` to `end`) the specified number of times.
+-- ** loop
+-- $loop
+-- loops the sample (from `begin` to `end`) the specified number of times.
 loop :: Pattern Double -> ControlPattern
 loop = pF "loop"
 loopTake :: String -> [Double] -> ControlPattern
@@ -1530,7 +1602,7 @@ loopCountTo name ipat = innerJoin $ (\i -> pStateF "loop" name (maybe 0 ((`mod'`
 loopbus :: Pattern Int -> Pattern Double -> ControlPattern
 loopbus _ _ = error $ "Control parameter 'loop' can't be sent to a bus."
 
--- | 
+-- ** lophat
 lophat :: Pattern Double -> ControlPattern
 lophat = pF "lophat"
 lophatTake :: String -> [Double] -> ControlPattern
@@ -1545,7 +1617,7 @@ lophatbus busid pat = (pF "lophat" pat) # (pI "^lophat" busid)
 lophatrecv :: Pattern Int -> ControlPattern
 lophatrecv busid = pI "^lophat" busid
 
--- | 
+-- ** lrate
 lrate :: Pattern Double -> ControlPattern
 lrate = pF "lrate"
 lrateTake :: String -> [Double] -> ControlPattern
@@ -1560,7 +1632,7 @@ lratebus busid pat = (pF "lrate" pat) # (pI "^lrate" busid)
 lraterecv :: Pattern Int -> ControlPattern
 lraterecv busid = pI "^lrate" busid
 
--- | 
+-- ** lsize
 lsize :: Pattern Double -> ControlPattern
 lsize = pF "lsize"
 lsizeTake :: String -> [Double] -> ControlPattern
@@ -1575,7 +1647,7 @@ lsizebus busid pat = (pF "lsize" pat) # (pI "^lsize" busid)
 lsizerecv :: Pattern Int -> ControlPattern
 lsizerecv busid = pI "^lsize" busid
 
--- | 
+-- ** lsnare
 lsnare :: Pattern Double -> ControlPattern
 lsnare = pF "lsnare"
 lsnareTake :: String -> [Double] -> ControlPattern
@@ -1590,7 +1662,7 @@ lsnarebus busid pat = (pF "lsnare" pat) # (pI "^lsnare" busid)
 lsnarerecv :: Pattern Int -> ControlPattern
 lsnarerecv busid = pI "^lsnare" busid
 
--- | 
+-- ** midibend
 midibend :: Pattern Double -> ControlPattern
 midibend = pF "midibend"
 midibendTake :: String -> [Double] -> ControlPattern
@@ -1605,7 +1677,7 @@ midibendbus busid pat = (pF "midibend" pat) # (pI "^midibend" busid)
 midibendrecv :: Pattern Int -> ControlPattern
 midibendrecv busid = pI "^midibend" busid
 
--- | 
+-- ** midichan
 midichan :: Pattern Double -> ControlPattern
 midichan = pF "midichan"
 midichanTake :: String -> [Double] -> ControlPattern
@@ -1620,7 +1692,7 @@ midichanbus busid pat = (pF "midichan" pat) # (pI "^midichan" busid)
 midichanrecv :: Pattern Int -> ControlPattern
 midichanrecv busid = pI "^midichan" busid
 
--- | 
+-- ** midicmd
 midicmd :: Pattern String -> ControlPattern
 midicmd = pS "midicmd"
 midicmdTake :: String -> [Double] -> ControlPattern
@@ -1630,7 +1702,7 @@ midicmdbus busid pat = (pS "midicmd" pat) # (pI "^midicmd" busid)
 midicmdrecv :: Pattern Int -> ControlPattern
 midicmdrecv busid = pI "^midicmd" busid
 
--- | 
+-- ** miditouch
 miditouch :: Pattern Double -> ControlPattern
 miditouch = pF "miditouch"
 miditouchTake :: String -> [Double] -> ControlPattern
@@ -1645,7 +1717,7 @@ miditouchbus busid pat = (pF "miditouch" pat) # (pI "^miditouch" busid)
 miditouchrecv :: Pattern Int -> ControlPattern
 miditouchrecv busid = pI "^miditouch" busid
 
--- | 
+-- ** minutes
 minutes :: Pattern Double -> ControlPattern
 minutes = pF "minutes"
 minutesTake :: String -> [Double] -> ControlPattern
@@ -1660,7 +1732,7 @@ minutesbus busid pat = (pF "minutes" pat) # (pI "^minutes" busid)
 minutesrecv :: Pattern Int -> ControlPattern
 minutesrecv busid = pI "^minutes" busid
 
--- | 
+-- ** modwheel
 modwheel :: Pattern Double -> ControlPattern
 modwheel = pF "modwheel"
 modwheelTake :: String -> [Double] -> ControlPattern
@@ -1675,7 +1747,7 @@ modwheelbus busid pat = (pF "modwheel" pat) # (pI "^modwheel" busid)
 modwheelrecv :: Pattern Int -> ControlPattern
 modwheelrecv busid = pI "^modwheel" busid
 
--- | 
+-- ** mtranspose
 mtranspose :: Pattern Double -> ControlPattern
 mtranspose = pF "mtranspose"
 mtransposeTake :: String -> [Double] -> ControlPattern
@@ -1690,7 +1762,9 @@ mtransposebus busid pat = (pF "mtranspose" pat) # (pI "^mtranspose" busid)
 mtransposerecv :: Pattern Int -> ControlPattern
 mtransposerecv busid = pI "^mtranspose" busid
 
--- | The note or sample number to choose for a synth or sampleset
+-- ** n
+-- $n
+-- The note or sample number to choose for a synth or sampleset
 n :: Pattern Note -> ControlPattern
 n = pN "n"
 nTake :: String -> [Double] -> ControlPattern
@@ -1703,7 +1777,9 @@ nCountTo name ipat = innerJoin $ (\i -> pStateF "n" name (maybe 0 ((`mod'` i) . 
 nbus :: Pattern Int -> Pattern Note -> ControlPattern
 nbus _ _ = error $ "Control parameter 'n' can't be sent to a bus."
 
--- | The note or pitch to play a sound or synth with
+-- ** note
+-- $note
+-- The note or pitch to play a sound or synth with
 note :: Pattern Note -> ControlPattern
 note = pN "note"
 noteTake :: String -> [Double] -> ControlPattern
@@ -1716,7 +1792,7 @@ noteCountTo name ipat = innerJoin $ (\i -> pStateF "note" name (maybe 0 ((`mod'`
 notebus :: Pattern Int -> Pattern Note -> ControlPattern
 notebus _ _ = error $ "Control parameter 'note' can't be sent to a bus."
 
--- | 
+-- ** nrpnn
 nrpnn :: Pattern Int -> ControlPattern
 nrpnn = pI "nrpnn"
 nrpnnTake :: String -> [Double] -> ControlPattern
@@ -1731,7 +1807,7 @@ nrpnnbus busid pat = (pI "nrpnn" pat) # (pI "^nrpnn" busid)
 nrpnnrecv :: Pattern Int -> ControlPattern
 nrpnnrecv busid = pI "^nrpnn" busid
 
--- | 
+-- ** nrpnv
 nrpnv :: Pattern Int -> ControlPattern
 nrpnv = pI "nrpnv"
 nrpnvTake :: String -> [Double] -> ControlPattern
@@ -1746,7 +1822,9 @@ nrpnvbus busid pat = (pI "nrpnv" pat) # (pI "^nrpnv" busid)
 nrpnvrecv :: Pattern Int -> ControlPattern
 nrpnvrecv busid = pI "^nrpnv" busid
 
--- | Nudges events into the future by the specified number of seconds. Negative numbers work up to a point as well (due to internal latency)
+-- ** nudge
+-- $nudge
+-- Nudges events into the future by the specified number of seconds. Negative numbers work up to a point as well (due to internal latency)
 nudge :: Pattern Double -> ControlPattern
 nudge = pF "nudge"
 nudgeTake :: String -> [Double] -> ControlPattern
@@ -1761,7 +1839,7 @@ nudgebus busid pat = (pF "nudge" pat) # (pI "^nudge" busid)
 nudgerecv :: Pattern Int -> ControlPattern
 nudgerecv busid = pI "^nudge" busid
 
--- | 
+-- ** octave
 octave :: Pattern Int -> ControlPattern
 octave = pI "octave"
 octaveTake :: String -> [Double] -> ControlPattern
@@ -1774,7 +1852,7 @@ octaveCountTo name ipat = innerJoin $ (\i -> pStateF "octave" name (maybe 0 ((`m
 octavebus :: Pattern Int -> Pattern Int -> ControlPattern
 octavebus _ _ = error $ "Control parameter 'octave' can't be sent to a bus."
 
--- | 
+-- ** octaveR
 octaveR :: Pattern Double -> ControlPattern
 octaveR = pF "octaveR"
 octaveRTake :: String -> [Double] -> ControlPattern
@@ -1789,7 +1867,9 @@ octaveRbus busid pat = (pF "octaveR" pat) # (pI "^octaveR" busid)
 octaveRrecv :: Pattern Int -> ControlPattern
 octaveRrecv busid = pI "^octaveR" busid
 
--- | octaver effect
+-- ** octer
+-- $octer
+-- octaver effect
 octer :: Pattern Double -> ControlPattern
 octer = pF "octer"
 octerTake :: String -> [Double] -> ControlPattern
@@ -1804,7 +1884,9 @@ octerbus busid pat = (pF "octer" pat) # (pI "^octer" busid)
 octerrecv :: Pattern Int -> ControlPattern
 octerrecv busid = pI "^octer" busid
 
--- | octaver effect
+-- ** octersub
+-- $octersub
+-- octaver effect
 octersub :: Pattern Double -> ControlPattern
 octersub = pF "octersub"
 octersubTake :: String -> [Double] -> ControlPattern
@@ -1819,7 +1901,9 @@ octersubbus busid pat = (pF "octersub" pat) # (pI "^octersub" busid)
 octersubrecv :: Pattern Int -> ControlPattern
 octersubrecv busid = pI "^octersub" busid
 
--- | octaver effect
+-- ** octersubsub
+-- $octersubsub
+-- octaver effect
 octersubsub :: Pattern Double -> ControlPattern
 octersubsub = pF "octersubsub"
 octersubsubTake :: String -> [Double] -> ControlPattern
@@ -1834,7 +1918,7 @@ octersubsubbus busid pat = (pF "octersubsub" pat) # (pI "^octersubsub" busid)
 octersubsubrecv :: Pattern Int -> ControlPattern
 octersubsubrecv busid = pI "^octersubsub" busid
 
--- | 
+-- ** offset
 offset :: Pattern Double -> ControlPattern
 offset = pF "offset"
 offsetTake :: String -> [Double] -> ControlPattern
@@ -1847,7 +1931,7 @@ offsetCountTo name ipat = innerJoin $ (\i -> pStateF "offset" name (maybe 0 ((`m
 offsetbus :: Pattern Int -> Pattern Double -> ControlPattern
 offsetbus _ _ = error $ "Control parameter 'offset' can't be sent to a bus."
 
--- | 
+-- ** ophatdecay
 ophatdecay :: Pattern Double -> ControlPattern
 ophatdecay = pF "ophatdecay"
 ophatdecayTake :: String -> [Double] -> ControlPattern
@@ -1862,7 +1946,9 @@ ophatdecaybus busid pat = (pF "ophatdecay" pat) # (pI "^ophatdecay" busid)
 ophatdecayrecv :: Pattern Int -> ControlPattern
 ophatdecayrecv busid = pI "^ophatdecay" busid
 
--- | a pattern of numbers. An `orbit` is a global parameter context for patterns. Patterns with the same orbit will share hardware output bus offset and global effects, e.g. reverb and delay. The maximum number of orbits is specified in the superdirt startup, numbers higher than maximum will wrap around.
+-- ** orbit
+-- $orbit
+-- a pattern of numbers. An `orbit` is a global parameter context for patterns. Patterns with the same orbit will share hardware output bus offset and global effects, e.g. reverb and delay. The maximum number of orbits is specified in the superdirt startup, numbers higher than maximum will wrap around.
 orbit :: Pattern Int -> ControlPattern
 orbit = pI "orbit"
 orbitTake :: String -> [Double] -> ControlPattern
@@ -1877,7 +1963,7 @@ orbitbus busid pat = (pI "orbit" pat) # (pI "^orbit" busid)
 orbitrecv :: Pattern Int -> ControlPattern
 orbitrecv busid = pI "^orbit" busid
 
--- | 
+-- ** overgain
 overgain :: Pattern Double -> ControlPattern
 overgain = pF "overgain"
 overgainTake :: String -> [Double] -> ControlPattern
@@ -1890,7 +1976,7 @@ overgainCountTo name ipat = innerJoin $ (\i -> pStateF "overgain" name (maybe 0 
 overgainbus :: Pattern Int -> Pattern Double -> ControlPattern
 overgainbus _ _ = error $ "Control parameter 'overgain' can't be sent to a bus."
 
--- | 
+-- ** overshape
 overshape :: Pattern Double -> ControlPattern
 overshape = pF "overshape"
 overshapeTake :: String -> [Double] -> ControlPattern
@@ -1905,7 +1991,9 @@ overshapebus busid pat = (pF "overshape" pat) # (pI "^overshape" busid)
 overshaperecv :: Pattern Int -> ControlPattern
 overshaperecv busid = pI "^overshape" busid
 
--- | a pattern of numbers between 0 and 1, from left to right (assuming stereo), once round a circle (assuming multichannel)
+-- ** pan
+-- $pan
+-- a pattern of numbers between 0 and 1, from left to right (assuming stereo), once round a circle (assuming multichannel)
 pan :: Pattern Double -> ControlPattern
 pan = pF "pan"
 panTake :: String -> [Double] -> ControlPattern
@@ -1920,7 +2008,9 @@ panbus busid pat = (pF "pan" pat) # (pI "^pan" busid)
 panrecv :: Pattern Int -> ControlPattern
 panrecv busid = pI "^pan" busid
 
--- | a pattern of numbers between -1.0 and 1.0, which controls the relative position of the centre pan in a pair of adjacent speakers (multichannel only)
+-- ** panorient
+-- $panorient
+-- a pattern of numbers between -1.0 and 1.0, which controls the relative position of the centre pan in a pair of adjacent speakers (multichannel only)
 panorient :: Pattern Double -> ControlPattern
 panorient = pF "panorient"
 panorientTake :: String -> [Double] -> ControlPattern
@@ -1935,7 +2025,9 @@ panorientbus busid pat = (pF "panorient" pat) # (pI "^panorient" busid)
 panorientrecv :: Pattern Int -> ControlPattern
 panorientrecv busid = pI "^panorient" busid
 
--- | a pattern of numbers between -inf and inf, which controls how much multichannel output is fanned out (negative is backwards ordering)
+-- ** panspan
+-- $panspan
+-- a pattern of numbers between -inf and inf, which controls how much multichannel output is fanned out (negative is backwards ordering)
 panspan :: Pattern Double -> ControlPattern
 panspan = pF "panspan"
 panspanTake :: String -> [Double] -> ControlPattern
@@ -1950,7 +2042,9 @@ panspanbus busid pat = (pF "panspan" pat) # (pI "^panspan" busid)
 panspanrecv :: Pattern Int -> ControlPattern
 panspanrecv busid = pI "^panspan" busid
 
--- | a pattern of numbers between 0.0 and 1.0, which controls the multichannel spread range (multichannel only)
+-- ** pansplay
+-- $pansplay
+-- a pattern of numbers between 0.0 and 1.0, which controls the multichannel spread range (multichannel only)
 pansplay :: Pattern Double -> ControlPattern
 pansplay = pF "pansplay"
 pansplayTake :: String -> [Double] -> ControlPattern
@@ -1965,7 +2059,9 @@ pansplaybus busid pat = (pF "pansplay" pat) # (pI "^pansplay" busid)
 pansplayrecv :: Pattern Int -> ControlPattern
 pansplayrecv busid = pI "^pansplay" busid
 
--- | a pattern of numbers between 0.0 and inf, which controls how much each channel is distributed over neighbours (multichannel only)
+-- ** panwidth
+-- $panwidth
+-- a pattern of numbers between 0.0 and inf, which controls how much each channel is distributed over neighbours (multichannel only)
 panwidth :: Pattern Double -> ControlPattern
 panwidth = pF "panwidth"
 panwidthTake :: String -> [Double] -> ControlPattern
@@ -1980,7 +2076,7 @@ panwidthbus busid pat = (pF "panwidth" pat) # (pI "^panwidth" busid)
 panwidthrecv :: Pattern Int -> ControlPattern
 panwidthrecv busid = pI "^panwidth" busid
 
--- | 
+-- ** partials
 partials :: Pattern Double -> ControlPattern
 partials = pF "partials"
 partialsTake :: String -> [Double] -> ControlPattern
@@ -1995,7 +2091,9 @@ partialsbus busid pat = (pF "partials" pat) # (pI "^partials" busid)
 partialsrecv :: Pattern Int -> ControlPattern
 partialsrecv busid = pI "^partials" busid
 
--- | Phaser Audio DSP effect | params are 'phaserrate' and 'phaserdepth'
+-- ** phaserdepth
+-- $phaserdepth
+-- Phaser Audio DSP effect | params are 'phaserrate' and 'phaserdepth'
 phaserdepth :: Pattern Double -> ControlPattern
 phaserdepth = pF "phaserdepth"
 phaserdepthTake :: String -> [Double] -> ControlPattern
@@ -2010,7 +2108,9 @@ phaserdepthbus busid pat = (pF "phaserdepth" pat) # (pI "^phaserdepth" busid)
 phaserdepthrecv :: Pattern Int -> ControlPattern
 phaserdepthrecv busid = pI "^phaserdepth" busid
 
--- | Phaser Audio DSP effect | params are 'phaserrate' and 'phaserdepth'
+-- ** phaserrate
+-- $phaserrate
+-- Phaser Audio DSP effect | params are 'phaserrate' and 'phaserdepth'
 phaserrate :: Pattern Double -> ControlPattern
 phaserrate = pF "phaserrate"
 phaserrateTake :: String -> [Double] -> ControlPattern
@@ -2025,7 +2125,7 @@ phaserratebus busid pat = (pF "phaserrate" pat) # (pI "^phaserrate" busid)
 phaserraterecv :: Pattern Int -> ControlPattern
 phaserraterecv busid = pI "^phaserrate" busid
 
--- | 
+-- ** pitch1
 pitch1 :: Pattern Double -> ControlPattern
 pitch1 = pF "pitch1"
 pitch1Take :: String -> [Double] -> ControlPattern
@@ -2040,7 +2140,7 @@ pitch1bus busid pat = (pF "pitch1" pat) # (pI "^pitch1" busid)
 pitch1recv :: Pattern Int -> ControlPattern
 pitch1recv busid = pI "^pitch1" busid
 
--- | 
+-- ** pitch2
 pitch2 :: Pattern Double -> ControlPattern
 pitch2 = pF "pitch2"
 pitch2Take :: String -> [Double] -> ControlPattern
@@ -2055,7 +2155,7 @@ pitch2bus busid pat = (pF "pitch2" pat) # (pI "^pitch2" busid)
 pitch2recv :: Pattern Int -> ControlPattern
 pitch2recv busid = pI "^pitch2" busid
 
--- | 
+-- ** pitch3
 pitch3 :: Pattern Double -> ControlPattern
 pitch3 = pF "pitch3"
 pitch3Take :: String -> [Double] -> ControlPattern
@@ -2070,7 +2170,7 @@ pitch3bus busid pat = (pF "pitch3" pat) # (pI "^pitch3" busid)
 pitch3recv :: Pattern Int -> ControlPattern
 pitch3recv busid = pI "^pitch3" busid
 
--- | 
+-- ** polyTouch
 polyTouch :: Pattern Double -> ControlPattern
 polyTouch = pF "polyTouch"
 polyTouchTake :: String -> [Double] -> ControlPattern
@@ -2085,7 +2185,7 @@ polyTouchbus busid pat = (pF "polyTouch" pat) # (pI "^polyTouch" busid)
 polyTouchrecv :: Pattern Int -> ControlPattern
 polyTouchrecv busid = pI "^polyTouch" busid
 
--- | 
+-- ** portamento
 portamento :: Pattern Double -> ControlPattern
 portamento = pF "portamento"
 portamentoTake :: String -> [Double] -> ControlPattern
@@ -2100,7 +2200,7 @@ portamentobus busid pat = (pF "portamento" pat) # (pI "^portamento" busid)
 portamentorecv :: Pattern Int -> ControlPattern
 portamentorecv busid = pI "^portamento" busid
 
--- | 
+-- ** progNum
 progNum :: Pattern Double -> ControlPattern
 progNum = pF "progNum"
 progNumTake :: String -> [Double] -> ControlPattern
@@ -2115,7 +2215,9 @@ progNumbus busid pat = (pF "progNum" pat) # (pI "^progNum" busid)
 progNumrecv :: Pattern Int -> ControlPattern
 progNumrecv busid = pI "^progNum" busid
 
--- | used in SuperDirt softsynths as a control rate or 'speed'
+-- ** rate
+-- $rate
+-- used in SuperDirt softsynths as a control rate or 'speed'
 rate :: Pattern Double -> ControlPattern
 rate = pF "rate"
 rateTake :: String -> [Double] -> ControlPattern
@@ -2130,7 +2232,9 @@ ratebus busid pat = (pF "rate" pat) # (pI "^rate" busid)
 raterecv :: Pattern Int -> ControlPattern
 raterecv busid = pI "^rate" busid
 
--- | Spectral conform
+-- ** real
+-- $real
+-- Spectral conform
 real :: Pattern Double -> ControlPattern
 real = pF "real"
 realTake :: String -> [Double] -> ControlPattern
@@ -2145,7 +2249,9 @@ realbus busid pat = (pF "real" pat) # (pI "^real" busid)
 realrecv :: Pattern Int -> ControlPattern
 realrecv busid = pI "^real" busid
 
--- | a pattern of numbers to specify the release time (in seconds) of an envelope applied to each sample.
+-- ** release
+-- $release
+-- a pattern of numbers to specify the release time (in seconds) of an envelope applied to each sample.
 release :: Pattern Double -> ControlPattern
 release = pF "release"
 releaseTake :: String -> [Double] -> ControlPattern
@@ -2160,7 +2266,9 @@ releasebus busid pat = (pF "release" pat) # (pI "^release" busid)
 releaserecv :: Pattern Int -> ControlPattern
 releaserecv busid = pI "^release" busid
 
--- | a pattern of numbers from 0 to 1. Specifies the resonance of the low-pass filter.
+-- ** resonance
+-- $resonance
+-- a pattern of numbers from 0 to 1. Specifies the resonance of the low-pass filter.
 resonance :: Pattern Double -> ControlPattern
 resonance = pF "resonance"
 resonanceTake :: String -> [Double] -> ControlPattern
@@ -2175,7 +2283,9 @@ resonancebus busid pat = (pF "resonance" pat) # (pI "^resonance" busid)
 resonancerecv :: Pattern Int -> ControlPattern
 resonancerecv busid = pI "^resonance" busid
 
--- | ring modulation
+-- ** ring
+-- $ring
+-- ring modulation
 ring :: Pattern Double -> ControlPattern
 ring = pF "ring"
 ringTake :: String -> [Double] -> ControlPattern
@@ -2190,7 +2300,9 @@ ringbus busid pat = (pF "ring" pat) # (pI "^ring" busid)
 ringrecv :: Pattern Int -> ControlPattern
 ringrecv busid = pI "^ring" busid
 
--- | ring modulation
+-- ** ringdf
+-- $ringdf
+-- ring modulation
 ringdf :: Pattern Double -> ControlPattern
 ringdf = pF "ringdf"
 ringdfTake :: String -> [Double] -> ControlPattern
@@ -2205,7 +2317,9 @@ ringdfbus busid pat = (pF "ringdf" pat) # (pI "^ringdf" busid)
 ringdfrecv :: Pattern Int -> ControlPattern
 ringdfrecv busid = pI "^ringdf" busid
 
--- | ring modulation
+-- ** ringf
+-- $ringf
+-- ring modulation
 ringf :: Pattern Double -> ControlPattern
 ringf = pF "ringf"
 ringfTake :: String -> [Double] -> ControlPattern
@@ -2220,7 +2334,9 @@ ringfbus busid pat = (pF "ringf" pat) # (pI "^ringf" busid)
 ringfrecv :: Pattern Int -> ControlPattern
 ringfrecv busid = pI "^ringf" busid
 
--- | a pattern of numbers from 0 to 1. Sets the level of reverb.
+-- ** room
+-- $room
+-- a pattern of numbers from 0 to 1. Sets the level of reverb.
 room :: Pattern Double -> ControlPattern
 room = pF "room"
 roomTake :: String -> [Double] -> ControlPattern
@@ -2235,7 +2351,7 @@ roombus busid pat = (pF "room" pat) # (pI "^room" busid)
 roomrecv :: Pattern Int -> ControlPattern
 roomrecv busid = pI "^room" busid
 
--- | 
+-- ** sagogo
 sagogo :: Pattern Double -> ControlPattern
 sagogo = pF "sagogo"
 sagogoTake :: String -> [Double] -> ControlPattern
@@ -2250,7 +2366,7 @@ sagogobus busid pat = (pF "sagogo" pat) # (pI "^sagogo" busid)
 sagogorecv :: Pattern Int -> ControlPattern
 sagogorecv busid = pI "^sagogo" busid
 
--- | 
+-- ** sclap
 sclap :: Pattern Double -> ControlPattern
 sclap = pF "sclap"
 sclapTake :: String -> [Double] -> ControlPattern
@@ -2265,7 +2381,7 @@ sclapbus busid pat = (pF "sclap" pat) # (pI "^sclap" busid)
 sclaprecv :: Pattern Int -> ControlPattern
 sclaprecv busid = pI "^sclap" busid
 
--- | 
+-- ** sclaves
 sclaves :: Pattern Double -> ControlPattern
 sclaves = pF "sclaves"
 sclavesTake :: String -> [Double] -> ControlPattern
@@ -2280,7 +2396,9 @@ sclavesbus busid pat = (pF "sclaves" pat) # (pI "^sclaves" busid)
 sclavesrecv :: Pattern Int -> ControlPattern
 sclavesrecv busid = pI "^sclaves" busid
 
--- | Spectral scramble
+-- ** scram
+-- $scram
+-- Spectral scramble
 scram :: Pattern Double -> ControlPattern
 scram = pF "scram"
 scramTake :: String -> [Double] -> ControlPattern
@@ -2295,7 +2413,7 @@ scrambus busid pat = (pF "scram" pat) # (pI "^scram" busid)
 scramrecv :: Pattern Int -> ControlPattern
 scramrecv busid = pI "^scram" busid
 
--- | 
+-- ** scrash
 scrash :: Pattern Double -> ControlPattern
 scrash = pF "scrash"
 scrashTake :: String -> [Double] -> ControlPattern
@@ -2310,7 +2428,7 @@ scrashbus busid pat = (pF "scrash" pat) # (pI "^scrash" busid)
 scrashrecv :: Pattern Int -> ControlPattern
 scrashrecv busid = pI "^scrash" busid
 
--- | 
+-- ** seconds
 seconds :: Pattern Double -> ControlPattern
 seconds = pF "seconds"
 secondsTake :: String -> [Double] -> ControlPattern
@@ -2325,7 +2443,7 @@ secondsbus busid pat = (pF "seconds" pat) # (pI "^seconds" busid)
 secondsrecv :: Pattern Int -> ControlPattern
 secondsrecv busid = pI "^seconds" busid
 
--- | 
+-- ** semitone
 semitone :: Pattern Double -> ControlPattern
 semitone = pF "semitone"
 semitoneTake :: String -> [Double] -> ControlPattern
@@ -2340,7 +2458,9 @@ semitonebus busid pat = (pF "semitone" pat) # (pI "^semitone" busid)
 semitonerecv :: Pattern Int -> ControlPattern
 semitonerecv busid = pI "^semitone" busid
 
--- | wave shaping distortion, a pattern of numbers from 0 for no distortion up to 1 for loads of distortion.
+-- ** shape
+-- $shape
+-- wave shaping distortion, a pattern of numbers from 0 for no distortion up to 1 for loads of distortion.
 shape :: Pattern Double -> ControlPattern
 shape = pF "shape"
 shapeTake :: String -> [Double] -> ControlPattern
@@ -2355,7 +2475,9 @@ shapebus busid pat = (pF "shape" pat) # (pI "^shape" busid)
 shaperecv :: Pattern Int -> ControlPattern
 shaperecv busid = pI "^shape" busid
 
--- | a pattern of numbers from 0 to 1. Sets the perceptual size (reverb time) of the `room` to be used in reverb.
+-- ** size
+-- $size
+-- a pattern of numbers from 0 to 1. Sets the perceptual size (reverb time) of the `room` to be used in reverb.
 size :: Pattern Double -> ControlPattern
 size = pF "size"
 sizeTake :: String -> [Double] -> ControlPattern
@@ -2370,7 +2492,7 @@ sizebus busid pat = (pF "size" pat) # (pI "^size" busid)
 sizerecv :: Pattern Int -> ControlPattern
 sizerecv busid = pI "^size" busid
 
--- | 
+-- ** slide
 slide :: Pattern Double -> ControlPattern
 slide = pF "slide"
 slideTake :: String -> [Double] -> ControlPattern
@@ -2385,7 +2507,7 @@ slidebus busid pat = (pF "slide" pat) # (pI "^slide" busid)
 sliderecv :: Pattern Int -> ControlPattern
 sliderecv busid = pI "^slide" busid
 
--- | 
+-- ** slider0
 slider0 :: Pattern Double -> ControlPattern
 slider0 = pF "slider0"
 slider0Take :: String -> [Double] -> ControlPattern
@@ -2400,7 +2522,7 @@ slider0bus busid pat = (pF "slider0" pat) # (pI "^slider0" busid)
 slider0recv :: Pattern Int -> ControlPattern
 slider0recv busid = pI "^slider0" busid
 
--- | 
+-- ** slider1
 slider1 :: Pattern Double -> ControlPattern
 slider1 = pF "slider1"
 slider1Take :: String -> [Double] -> ControlPattern
@@ -2415,7 +2537,7 @@ slider1bus busid pat = (pF "slider1" pat) # (pI "^slider1" busid)
 slider1recv :: Pattern Int -> ControlPattern
 slider1recv busid = pI "^slider1" busid
 
--- | 
+-- ** slider10
 slider10 :: Pattern Double -> ControlPattern
 slider10 = pF "slider10"
 slider10Take :: String -> [Double] -> ControlPattern
@@ -2430,7 +2552,7 @@ slider10bus busid pat = (pF "slider10" pat) # (pI "^slider10" busid)
 slider10recv :: Pattern Int -> ControlPattern
 slider10recv busid = pI "^slider10" busid
 
--- | 
+-- ** slider11
 slider11 :: Pattern Double -> ControlPattern
 slider11 = pF "slider11"
 slider11Take :: String -> [Double] -> ControlPattern
@@ -2445,7 +2567,7 @@ slider11bus busid pat = (pF "slider11" pat) # (pI "^slider11" busid)
 slider11recv :: Pattern Int -> ControlPattern
 slider11recv busid = pI "^slider11" busid
 
--- | 
+-- ** slider12
 slider12 :: Pattern Double -> ControlPattern
 slider12 = pF "slider12"
 slider12Take :: String -> [Double] -> ControlPattern
@@ -2460,7 +2582,7 @@ slider12bus busid pat = (pF "slider12" pat) # (pI "^slider12" busid)
 slider12recv :: Pattern Int -> ControlPattern
 slider12recv busid = pI "^slider12" busid
 
--- | 
+-- ** slider13
 slider13 :: Pattern Double -> ControlPattern
 slider13 = pF "slider13"
 slider13Take :: String -> [Double] -> ControlPattern
@@ -2475,7 +2597,7 @@ slider13bus busid pat = (pF "slider13" pat) # (pI "^slider13" busid)
 slider13recv :: Pattern Int -> ControlPattern
 slider13recv busid = pI "^slider13" busid
 
--- | 
+-- ** slider14
 slider14 :: Pattern Double -> ControlPattern
 slider14 = pF "slider14"
 slider14Take :: String -> [Double] -> ControlPattern
@@ -2490,7 +2612,7 @@ slider14bus busid pat = (pF "slider14" pat) # (pI "^slider14" busid)
 slider14recv :: Pattern Int -> ControlPattern
 slider14recv busid = pI "^slider14" busid
 
--- | 
+-- ** slider15
 slider15 :: Pattern Double -> ControlPattern
 slider15 = pF "slider15"
 slider15Take :: String -> [Double] -> ControlPattern
@@ -2505,7 +2627,7 @@ slider15bus busid pat = (pF "slider15" pat) # (pI "^slider15" busid)
 slider15recv :: Pattern Int -> ControlPattern
 slider15recv busid = pI "^slider15" busid
 
--- | 
+-- ** slider2
 slider2 :: Pattern Double -> ControlPattern
 slider2 = pF "slider2"
 slider2Take :: String -> [Double] -> ControlPattern
@@ -2520,7 +2642,7 @@ slider2bus busid pat = (pF "slider2" pat) # (pI "^slider2" busid)
 slider2recv :: Pattern Int -> ControlPattern
 slider2recv busid = pI "^slider2" busid
 
--- | 
+-- ** slider3
 slider3 :: Pattern Double -> ControlPattern
 slider3 = pF "slider3"
 slider3Take :: String -> [Double] -> ControlPattern
@@ -2535,7 +2657,7 @@ slider3bus busid pat = (pF "slider3" pat) # (pI "^slider3" busid)
 slider3recv :: Pattern Int -> ControlPattern
 slider3recv busid = pI "^slider3" busid
 
--- | 
+-- ** slider4
 slider4 :: Pattern Double -> ControlPattern
 slider4 = pF "slider4"
 slider4Take :: String -> [Double] -> ControlPattern
@@ -2550,7 +2672,7 @@ slider4bus busid pat = (pF "slider4" pat) # (pI "^slider4" busid)
 slider4recv :: Pattern Int -> ControlPattern
 slider4recv busid = pI "^slider4" busid
 
--- | 
+-- ** slider5
 slider5 :: Pattern Double -> ControlPattern
 slider5 = pF "slider5"
 slider5Take :: String -> [Double] -> ControlPattern
@@ -2565,7 +2687,7 @@ slider5bus busid pat = (pF "slider5" pat) # (pI "^slider5" busid)
 slider5recv :: Pattern Int -> ControlPattern
 slider5recv busid = pI "^slider5" busid
 
--- | 
+-- ** slider6
 slider6 :: Pattern Double -> ControlPattern
 slider6 = pF "slider6"
 slider6Take :: String -> [Double] -> ControlPattern
@@ -2580,7 +2702,7 @@ slider6bus busid pat = (pF "slider6" pat) # (pI "^slider6" busid)
 slider6recv :: Pattern Int -> ControlPattern
 slider6recv busid = pI "^slider6" busid
 
--- | 
+-- ** slider7
 slider7 :: Pattern Double -> ControlPattern
 slider7 = pF "slider7"
 slider7Take :: String -> [Double] -> ControlPattern
@@ -2595,7 +2717,7 @@ slider7bus busid pat = (pF "slider7" pat) # (pI "^slider7" busid)
 slider7recv :: Pattern Int -> ControlPattern
 slider7recv busid = pI "^slider7" busid
 
--- | 
+-- ** slider8
 slider8 :: Pattern Double -> ControlPattern
 slider8 = pF "slider8"
 slider8Take :: String -> [Double] -> ControlPattern
@@ -2610,7 +2732,7 @@ slider8bus busid pat = (pF "slider8" pat) # (pI "^slider8" busid)
 slider8recv :: Pattern Int -> ControlPattern
 slider8recv busid = pI "^slider8" busid
 
--- | 
+-- ** slider9
 slider9 :: Pattern Double -> ControlPattern
 slider9 = pF "slider9"
 slider9Take :: String -> [Double] -> ControlPattern
@@ -2625,7 +2747,9 @@ slider9bus busid pat = (pF "slider9" pat) # (pI "^slider9" busid)
 slider9recv :: Pattern Int -> ControlPattern
 slider9recv busid = pI "^slider9" busid
 
--- | Spectral smear
+-- ** smear
+-- $smear
+-- Spectral smear
 smear :: Pattern Double -> ControlPattern
 smear = pF "smear"
 smearTake :: String -> [Double] -> ControlPattern
@@ -2640,7 +2764,7 @@ smearbus busid pat = (pF "smear" pat) # (pI "^smear" busid)
 smearrecv :: Pattern Int -> ControlPattern
 smearrecv busid = pI "^smear" busid
 
--- | 
+-- ** songPtr
 songPtr :: Pattern Double -> ControlPattern
 songPtr = pF "songPtr"
 songPtrTake :: String -> [Double] -> ControlPattern
@@ -2655,7 +2779,9 @@ songPtrbus busid pat = (pF "songPtr" pat) # (pI "^songPtr" busid)
 songPtrrecv :: Pattern Int -> ControlPattern
 songPtrrecv busid = pI "^songPtr" busid
 
--- | a pattern of numbers which changes the speed of sample playback, i.e. a cheap way of changing pitch. Negative values will play the sample backwards!
+-- ** speed
+-- $speed
+-- a pattern of numbers which changes the speed of sample playback, i.e. a cheap way of changing pitch. Negative values will play the sample backwards!
 speed :: Pattern Double -> ControlPattern
 speed = pF "speed"
 speedTake :: String -> [Double] -> ControlPattern
@@ -2668,7 +2794,7 @@ speedCountTo name ipat = innerJoin $ (\i -> pStateF "speed" name (maybe 0 ((`mod
 speedbus :: Pattern Int -> Pattern Double -> ControlPattern
 speedbus _ _ = error $ "Control parameter 'speed' can't be sent to a bus."
 
--- | 
+-- ** squiz
 squiz :: Pattern Double -> ControlPattern
 squiz = pF "squiz"
 squizTake :: String -> [Double] -> ControlPattern
@@ -2683,7 +2809,7 @@ squizbus busid pat = (pF "squiz" pat) # (pI "^squiz" busid)
 squizrecv :: Pattern Int -> ControlPattern
 squizrecv busid = pI "^squiz" busid
 
--- | 
+-- ** stepsPerOctave
 stepsPerOctave :: Pattern Double -> ControlPattern
 stepsPerOctave = pF "stepsPerOctave"
 stepsPerOctaveTake :: String -> [Double] -> ControlPattern
@@ -2698,7 +2824,7 @@ stepsPerOctavebus busid pat = (pF "stepsPerOctave" pat) # (pI "^stepsPerOctave" 
 stepsPerOctaverecv :: Pattern Int -> ControlPattern
 stepsPerOctaverecv busid = pI "^stepsPerOctave" busid
 
--- | 
+-- ** stutterdepth
 stutterdepth :: Pattern Double -> ControlPattern
 stutterdepth = pF "stutterdepth"
 stutterdepthTake :: String -> [Double] -> ControlPattern
@@ -2713,7 +2839,7 @@ stutterdepthbus busid pat = (pF "stutterdepth" pat) # (pI "^stutterdepth" busid)
 stutterdepthrecv :: Pattern Int -> ControlPattern
 stutterdepthrecv busid = pI "^stutterdepth" busid
 
--- | 
+-- ** stuttertime
 stuttertime :: Pattern Double -> ControlPattern
 stuttertime = pF "stuttertime"
 stuttertimeTake :: String -> [Double] -> ControlPattern
@@ -2728,7 +2854,7 @@ stuttertimebus busid pat = (pF "stuttertime" pat) # (pI "^stuttertime" busid)
 stuttertimerecv :: Pattern Int -> ControlPattern
 stuttertimerecv busid = pI "^stuttertime" busid
 
--- | 
+-- ** sustain
 sustain :: Pattern Double -> ControlPattern
 sustain = pF "sustain"
 sustainTake :: String -> [Double] -> ControlPattern
@@ -2741,7 +2867,7 @@ sustainCountTo name ipat = innerJoin $ (\i -> pStateF "sustain" name (maybe 0 ((
 sustainbus :: Pattern Int -> Pattern Double -> ControlPattern
 sustainbus _ _ = error $ "Control parameter 'sustain' can't be sent to a bus."
 
--- | 
+-- ** sustainpedal
 sustainpedal :: Pattern Double -> ControlPattern
 sustainpedal = pF "sustainpedal"
 sustainpedalTake :: String -> [Double] -> ControlPattern
@@ -2756,7 +2882,9 @@ sustainpedalbus busid pat = (pF "sustainpedal" pat) # (pI "^sustainpedal" busid)
 sustainpedalrecv :: Pattern Int -> ControlPattern
 sustainpedalrecv busid = pI "^sustainpedal" busid
 
--- | for internal sound routing
+-- ** to
+-- $to
+-- for internal sound routing
 to :: Pattern Double -> ControlPattern
 to = pF "to"
 toTake :: String -> [Double] -> ControlPattern
@@ -2771,7 +2899,9 @@ tobus busid pat = (pF "to" pat) # (pI "^to" busid)
 torecv :: Pattern Int -> ControlPattern
 torecv busid = pI "^to" busid
 
--- | for internal sound routing
+-- ** toArg
+-- $toArg
+-- for internal sound routing
 toArg :: Pattern String -> ControlPattern
 toArg = pS "toArg"
 toArgTake :: String -> [Double] -> ControlPattern
@@ -2781,7 +2911,7 @@ toArgbus busid pat = (pS "toArg" pat) # (pI "^toArg" busid)
 toArgrecv :: Pattern Int -> ControlPattern
 toArgrecv busid = pI "^toArg" busid
 
--- | 
+-- ** tomdecay
 tomdecay :: Pattern Double -> ControlPattern
 tomdecay = pF "tomdecay"
 tomdecayTake :: String -> [Double] -> ControlPattern
@@ -2796,7 +2926,9 @@ tomdecaybus busid pat = (pF "tomdecay" pat) # (pI "^tomdecay" busid)
 tomdecayrecv :: Pattern Int -> ControlPattern
 tomdecayrecv busid = pI "^tomdecay" busid
 
--- | Tremolo Audio DSP effect | params are 'tremolorate' and 'tremolodepth'
+-- ** tremolodepth
+-- $tremolodepth
+-- Tremolo Audio DSP effect | params are 'tremolorate' and 'tremolodepth'
 tremolodepth :: Pattern Double -> ControlPattern
 tremolodepth = pF "tremolodepth"
 tremolodepthTake :: String -> [Double] -> ControlPattern
@@ -2811,7 +2943,9 @@ tremolodepthbus busid pat = (pF "tremolodepth" pat) # (pI "^tremolodepth" busid)
 tremolodepthrecv :: Pattern Int -> ControlPattern
 tremolodepthrecv busid = pI "^tremolodepth" busid
 
--- | Tremolo Audio DSP effect | params are 'tremolorate' and 'tremolodepth'
+-- ** tremolorate
+-- $tremolorate
+-- Tremolo Audio DSP effect | params are 'tremolorate' and 'tremolodepth'
 tremolorate :: Pattern Double -> ControlPattern
 tremolorate = pF "tremolorate"
 tremolorateTake :: String -> [Double] -> ControlPattern
@@ -2826,7 +2960,9 @@ tremoloratebus busid pat = (pF "tremolorate" pat) # (pI "^tremolorate" busid)
 tremoloraterecv :: Pattern Int -> ControlPattern
 tremoloraterecv busid = pI "^tremolorate" busid
 
--- | tube distortion
+-- ** triode
+-- $triode
+-- tube distortion
 triode :: Pattern Double -> ControlPattern
 triode = pF "triode"
 triodeTake :: String -> [Double] -> ControlPattern
@@ -2841,7 +2977,7 @@ triodebus busid pat = (pF "triode" pat) # (pI "^triode" busid)
 trioderecv :: Pattern Int -> ControlPattern
 trioderecv busid = pI "^triode" busid
 
--- | 
+-- ** tsdelay
 tsdelay :: Pattern Double -> ControlPattern
 tsdelay = pF "tsdelay"
 tsdelayTake :: String -> [Double] -> ControlPattern
@@ -2856,7 +2992,7 @@ tsdelaybus busid pat = (pF "tsdelay" pat) # (pI "^tsdelay" busid)
 tsdelayrecv :: Pattern Int -> ControlPattern
 tsdelayrecv busid = pI "^tsdelay" busid
 
--- | 
+-- ** uid
 uid :: Pattern Double -> ControlPattern
 uid = pF "uid"
 uidTake :: String -> [Double] -> ControlPattern
@@ -2871,7 +3007,9 @@ uidbus busid pat = (pF "uid" pat) # (pI "^uid" busid)
 uidrecv :: Pattern Int -> ControlPattern
 uidrecv busid = pI "^uid" busid
 
--- | used in conjunction with `speed`, accepts values of "r" (rate, default behavior), "c" (cycles), or "s" (seconds). Using `unit "c"` means `speed` will be interpreted in units of cycles, e.g. `speed "1"` means samples will be stretched to fill a cycle. Using `unit "s"` means the playback speed will be adjusted so that the duration is the number of seconds specified by `speed`.
+-- ** unit
+-- $unit
+-- used in conjunction with `speed`, accepts values of "r" (rate, default behavior), "c" (cycles), or "s" (seconds). Using `unit "c"` means `speed` will be interpreted in units of cycles, e.g. `speed "1"` means samples will be stretched to fill a cycle. Using `unit "s"` means the playback speed will be adjusted so that the duration is the number of seconds specified by `speed`.
 unit :: Pattern String -> ControlPattern
 unit = pS "unit"
 unitTake :: String -> [Double] -> ControlPattern
@@ -2879,7 +3017,7 @@ unitTake name xs = pStateListF "unit" name xs
 unitbus :: Pattern Int -> Pattern String -> ControlPattern
 unitbus _ _ = error $ "Control parameter 'unit' can't be sent to a bus."
 
--- | 
+-- ** val
 val :: Pattern Double -> ControlPattern
 val = pF "val"
 valTake :: String -> [Double] -> ControlPattern
@@ -2894,7 +3032,7 @@ valbus busid pat = (pF "val" pat) # (pI "^val" busid)
 valrecv :: Pattern Int -> ControlPattern
 valrecv busid = pI "^val" busid
 
--- | 
+-- ** vcfegint
 vcfegint :: Pattern Double -> ControlPattern
 vcfegint = pF "vcfegint"
 vcfegintTake :: String -> [Double] -> ControlPattern
@@ -2909,7 +3047,7 @@ vcfegintbus busid pat = (pF "vcfegint" pat) # (pI "^vcfegint" busid)
 vcfegintrecv :: Pattern Int -> ControlPattern
 vcfegintrecv busid = pI "^vcfegint" busid
 
--- | 
+-- ** vcoegint
 vcoegint :: Pattern Double -> ControlPattern
 vcoegint = pF "vcoegint"
 vcoegintTake :: String -> [Double] -> ControlPattern
@@ -2924,7 +3062,7 @@ vcoegintbus busid pat = (pF "vcoegint" pat) # (pI "^vcoegint" busid)
 vcoegintrecv :: Pattern Int -> ControlPattern
 vcoegintrecv busid = pI "^vcoegint" busid
 
--- | 
+-- ** velocity
 velocity :: Pattern Double -> ControlPattern
 velocity = pF "velocity"
 velocityTake :: String -> [Double] -> ControlPattern
@@ -2939,7 +3077,7 @@ velocitybus busid pat = (pF "velocity" pat) # (pI "^velocity" busid)
 velocityrecv :: Pattern Int -> ControlPattern
 velocityrecv busid = pI "^velocity" busid
 
--- | 
+-- ** voice
 voice :: Pattern Double -> ControlPattern
 voice = pF "voice"
 voiceTake :: String -> [Double] -> ControlPattern
@@ -2954,7 +3092,9 @@ voicebus busid pat = (pF "voice" pat) # (pI "^voice" busid)
 voicerecv :: Pattern Int -> ControlPattern
 voicerecv busid = pI "^voice" busid
 
--- | formant filter to make things sound like vowels, a pattern of either `a`, `e`, `i`, `o` or `u`. Use a rest (`~`) for no effect.
+-- ** vowel
+-- $vowel
+-- formant filter to make things sound like vowels, a pattern of either `a`, `e`, `i`, `o` or `u`. Use a rest (`~`) for no effect.
 vowel :: Pattern String -> ControlPattern
 vowel = pS "vowel"
 vowelTake :: String -> [Double] -> ControlPattern
@@ -2964,7 +3104,7 @@ vowelbus busid pat = (pS "vowel" pat) # (pI "^vowel" busid)
 vowelrecv :: Pattern Int -> ControlPattern
 vowelrecv busid = pI "^vowel" busid
 
--- | 
+-- ** waveloss
 waveloss :: Pattern Double -> ControlPattern
 waveloss = pF "waveloss"
 wavelossTake :: String -> [Double] -> ControlPattern
@@ -2979,7 +3119,7 @@ wavelossbus busid pat = (pF "waveloss" pat) # (pI "^waveloss" busid)
 wavelossrecv :: Pattern Int -> ControlPattern
 wavelossrecv busid = pI "^waveloss" busid
 
--- | 
+-- ** xsdelay
 xsdelay :: Pattern Double -> ControlPattern
 xsdelay = pF "xsdelay"
 xsdelayTake :: String -> [Double] -> ControlPattern

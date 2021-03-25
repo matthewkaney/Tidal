@@ -35,13 +35,16 @@ header = do x <- openFile "params-header.hs" ReadMode
 controls = intercalate "\n" $ map fs $ sortBy (compare `on` (\(_,x,_) -> x)) genericParams
   where fs x = control x ++ bus x
         control (t, name, desc) =
-          concat ["-- | " ++ desc ++ "\n",
+          concat ["-- ** ", name, "\n",
+                  docs name desc,
                   name, " :: ", toType t, " -> ControlPattern\n",
                   name, " = ", toFunc t, " \"", name, "\"\n",
                   name, "Take :: String -> [Double] -> ControlPattern\n",
                   name, "Take name xs = pStateListF \"",name,"\" name xs\n",
                   counters t name
                  ]
+        docs _ "" = ""
+        docs name desc = "-- $" ++ name ++ "\n" ++ "-- " ++ desc ++ "\n"
         counters "note" name = counters "f" name
         counters "i" name = counters "f" name
         counters "f" name = concat [name, "Count :: String -> ControlPattern\n",
