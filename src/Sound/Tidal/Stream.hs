@@ -30,6 +30,7 @@ import qualified Data.Map.Strict as Map
 import           Data.Maybe (fromJust, fromMaybe, catMaybes, isJust)
 import qualified Control.Exception as E
 import           System.IO (hPutStrLn, stderr)
+import           Text.Show.Functions ()
 
 import qualified Sound.OSC.FD as O
 import qualified Network.Socket          as N
@@ -89,6 +90,7 @@ data Target = Target {oName :: String,
 
 data Args = Named {requiredArgs :: [String]}
           | ArgList [(String, Maybe Value)]
+          | Args (Event ValueMap -> Maybe [Value])
          deriving Show
 
 data OSC = OSC {path :: String,
@@ -272,6 +274,7 @@ toData (OSC {args = Named rqrd}) e
   where hasRequired [] = True
         hasRequired xs = null $ filter (not . (`elem` ks)) xs
         ks = Map.keys (value e)
+toData (OSC {args = Args f}) e = map (toDatum) <$> f e
 toData _ _ = Nothing
 
 substitutePath :: String -> ValueMap -> Maybe String
