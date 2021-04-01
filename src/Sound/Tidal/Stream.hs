@@ -139,6 +139,11 @@ superdirtTarget = Target {oName = "SuperDirt",
 superdirtShape :: OSC
 superdirtShape = OSC "/dirt/play" $ Named {requiredArgs = ["s"]}
 
+superdirtBusShape :: OSC
+superdirtBusShape = OSC "/c_set" $ Args makeBusArgs
+  where makeBusArgs :: Event ValueMap -> Maybe [Value]
+        makeBusArgs _ = Nothing
+
 dirtTarget :: Target
 dirtTarget = Target {oName = "Dirt",
                      oAddress = "127.0.0.1",
