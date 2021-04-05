@@ -142,7 +142,10 @@ superdirtShape = OSC "/dirt/play" $ Named {requiredArgs = ["s"]}
 superdirtBusShape :: OSC
 superdirtBusShape = OSC "/c_set" $ Args makeBusArgs
   where makeBusArgs :: Event ValueMap -> Maybe [Value]
-        makeBusArgs _ = Nothing
+        makeBusArgs = Nothing -- TODO: Implement
+          where changeParam :: String -> Value -> Maybe [Value]
+                changeParam ('^':pName) val = ([val] ++) . (:[]) <$> Map.lookup pName vals
+                changeParam _ _ = Nothing
 
 dirtTarget :: Target
 dirtTarget = Target {oName = "Dirt",
