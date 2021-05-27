@@ -99,6 +99,11 @@ data OSC = OSC {path :: String,
          | OSCContext {path :: String}
          deriving Show
 
+data OSCMessage a = OSCMessage {mPath :: String,
+                                mArgs :: [Value],
+                                mContext :: a
+                               }
+
 data PlayState = PlayState {pattern :: ControlPattern,
                             mute :: Bool,
                             solo :: Bool,
@@ -142,7 +147,7 @@ superdirtShape = OSC "/dirt/play" $ Named {requiredArgs = ["s"]}
 superdirtBusShape :: OSC
 superdirtBusShape = OSC "/c_set" $ Args makeBusArgs
   where makeBusArgs :: Event ValueMap -> Maybe [Value]
-        makeBusArgs = Nothing -- TODO: Implement
+        makeBusArgs evt = Nothing -- TODO: Implement
           where changeParam :: String -> Value -> Maybe [Value]
                 changeParam ('^':pName) val = ([val] ++) . (:[]) <$> Map.lookup pName vals
                 changeParam _ _ = Nothing
