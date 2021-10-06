@@ -205,6 +205,7 @@ startStream config oscmap
                                                            then Just <$> resolve (oAddress target) (show $ fromJust $ oBusPort target)
                                                            else return Nothing
                                         u <- O.openUDP (oAddress target) (oPort target)
+                                        when (oHandshake target) $ startHandshake config u bussesMV
                                         return $ Cx {cxUDP = u, cxAddr = remote_addr, cxBusAddr = remote_bus_addr, cxTarget = target, cxOSCs = os}                                        
                    ) oscmap
        let stream = Stream {sConfig = config,
@@ -216,9 +217,8 @@ startStream config oscmap
                             sGlobalFMV = globalFMV,
                             sCxs = cxs
                            }
-       sendHandshakes stream
        _ <- T.clocked config tempoMV $ onTick stream
-       _ <- forkIO $ ctrlResponder 0 config stream
+       _ <- forkIO $ ctrlResponder stream
        return stream
 
 -- It only really works to handshake with one target at the moment..
@@ -634,71 +634,87 @@ openListener c
         catchAny :: IO a -> (E.SomeException -> IO a) -> IO a
         catchAny = E.catch
 
-ctrlResponder :: Int -> Config -> Stream -> IO ()
-ctrlResponder waits c (stream@(Stream {sListen = Just sock}))
-  = do ms <- recvMessagesTimeout 2 sock
-       if (null ms)
-         then do checkHandshake -- there was a timeout, check handshake
-                 ctrlResponder (waits+1) c stream
-         else do mapM_ act ms
-                 ctrlResponder 0 c stream
-     where
-        checkHandshake = do busses <- readMVar (sBusses stream)
-                            when (null busses) $ do when  (waits == 0) $ verbose c $ "Waiting for SuperDirt (v.1.7.2 or higher).."
-                                                    sendHandshakes stream
+startHandshake :: Config -> O.UDP -> MVar [Int] -> IO ()
+startHandshake c socket busvar = (forkIO $ listenForHandshake 0) >> sendHandshake
+  where
+    sendHandshake :: IO ()
+    sendHandshake = O.sendMessage socket $ O.Message "/dirt/handshake" []
 
-        act (O.Message "/dirt/hello" _) = sendHandshakes stream
-        act (O.Message "/dirt/handshake/reply" xs) = do prev <- swapMVar (sBusses stream) $ bufferIndices xs
-                                                        -- Only report the first time..
-                                                        when (null prev) $ verbose c $ "Connected to SuperDirt."
-                                                        return ()
-          where 
-            bufferIndices [] = []
-            bufferIndices (x:xs') | x == (O.ASCII_String $ O.ascii "&controlBusIndices") = catMaybes $ takeWhile isJust $ map O.datum_integral xs'
-                                  | otherwise = bufferIndices xs'
-        -- External controller commands
-        act (O.Message "/ctrl" (O.Int32 k:v:[]))
-          = act (O.Message "/ctrl" [O.string $ show k,v])
-        act (O.Message "/ctrl" (O.ASCII_String k:v@(O.Float _):[]))
-          = add (O.ascii_to_string k) (VF (fromJust $ O.datum_floating v))
-        act (O.Message "/ctrl" (O.ASCII_String k:O.ASCII_String v:[]))
-          = add (O.ascii_to_string k) (VS (O.ascii_to_string v))
-        act (O.Message "/ctrl" (O.ASCII_String k:O.Int32 v:[]))
-          = add (O.ascii_to_string k) (VI (fromIntegral v))
-        -- Stream playback commands
-        act (O.Message "/mute" (k:[]))
-          = withID k $ streamMute stream
-        act (O.Message "/unmute" (k:[]))
-          = withID k $ streamUnmute stream
-        act (O.Message "/solo" (k:[]))
-          = withID k $ streamSolo stream
-        act (O.Message "/unsolo" (k:[]))
-          = withID k $ streamUnsolo stream
-        act (O.Message "/muteAll" [])
-          = streamMuteAll stream
-        act (O.Message "/unmuteAll" [])
-          = streamUnmuteAll stream
-        act (O.Message "/unsoloAll" [])
-          = streamUnsoloAll stream
-        act (O.Message "/hush" [])
-          = streamHush stream
-        act m = hPutStrLn stderr $ "Unhandled OSC: " ++ show m
-        add :: String -> Value -> IO ()
-        add k v = do sMap <- takeMVar (sStateMV stream)
-                     putMVar (sStateMV stream) $ Map.insert k v sMap
-                     return ()
-        withID :: O.Datum -> (ID -> IO ()) -> IO ()
-        withID (O.ASCII_String k) func = func $ (ID . O.ascii_to_string) k
-        withID (O.Int32 k) func = func $ (ID . show) k
-        withID _ _ = return ()
-ctrlResponder _ _ _ = return ()
+    listenForHandshake :: Int -> IO ()
+    listenForHandshake waits
+      = do ms <- recvMessagesTimeout 2 socket
+           if (null ms)
+             then do checkHandshake waits -- there was a timeout, check handshake
+                     listenForHandshake (waits + 1)
+             else do mapM_ act ms
+                     listenForHandshake 0
+
+    checkHandshake :: Int -> IO ()
+    checkHandshake waits = do busses <- readMVar busvar
+                              when (null busses) $ do when (waits == 0) $ verbose c $ "Waiting for SuperDirt (v.1.7.2 or higher).."
+                                                      sendHandshake
+
+    act :: O.Message -> IO ()
+    act (O.Message "/dirt/hello" _) = sendHandshake
+    act (O.Message "/dirt/handshake/reply" xs) = do prev <- swapMVar busvar $ bufferIndices xs
+                                                    -- Only report the first time..
+                                                    when (null prev) $ verbose c $ "Connected to SuperDirt."
+                                                    return ()
+    act m = hPutStrLn stderr $ "Unhandled OSC on Handshake Port: " ++ show m
+
+    bufferIndices :: [O.Datum] -> [Int]
+    bufferIndices [] = []
+    bufferIndices (x:xs') | x == (O.ASCII_String $ O.ascii "&controlBusIndices") = catMaybes $ takeWhile isJust $ map O.datum_integral xs'
+                          | otherwise = bufferIndices xs'
+    recvMessagesTimeout :: (O.Transport t) => Double -> t -> IO [O.Message]
+    recvMessagesTimeout n sock = fmap (maybe [] O.packetMessages) $ O.recvPacketTimeout n sock
+
+ctrlResponder :: Stream -> IO ()
+ctrlResponder (stream@(Stream {sListen = Just sock}))
+  = do ms <- O.recvMessages sock
+       mapM_ act ms
+       ctrlResponder stream
+    where
+      -- External controller commands
+      act (O.Message "/ctrl" (O.Int32 k:v:[]))
+        = act (O.Message "/ctrl" [O.string $ show k,v])
+      act (O.Message "/ctrl" (O.ASCII_String k:v@(O.Float _):[]))
+        = add (O.ascii_to_string k) (VF (fromJust $ O.datum_floating v))
+      act (O.Message "/ctrl" (O.ASCII_String k:O.ASCII_String v:[]))
+        = add (O.ascii_to_string k) (VS (O.ascii_to_string v))
+      act (O.Message "/ctrl" (O.ASCII_String k:O.Int32 v:[]))
+        = add (O.ascii_to_string k) (VI (fromIntegral v))
+      -- Stream playback commands
+      act (O.Message "/mute" (k:[]))
+        = withID k $ streamMute stream
+      act (O.Message "/unmute" (k:[]))
+        = withID k $ streamUnmute stream
+      act (O.Message "/solo" (k:[]))
+        = withID k $ streamSolo stream
+      act (O.Message "/unsolo" (k:[]))
+        = withID k $ streamUnsolo stream
+      act (O.Message "/muteAll" [])
+        = streamMuteAll stream
+      act (O.Message "/unmuteAll" [])
+        = streamUnmuteAll stream
+      act (O.Message "/unsoloAll" [])
+        = streamUnsoloAll stream
+      act (O.Message "/hush" [])
+        = streamHush stream
+      act m = hPutStrLn stderr $ "Unhandled OSC: " ++ show m
+      add :: String -> Value -> IO ()
+      add k v = do sMap <- takeMVar (sStateMV stream)
+                    putMVar (sStateMV stream) $ Map.insert k v sMap
+                    return ()
+      withID :: O.Datum -> (ID -> IO ()) -> IO ()
+      withID (O.ASCII_String k) func = func $ (ID . O.ascii_to_string) k
+      withID (O.Int32 k) func = func $ (ID . show) k
+      withID _ _ = return ()
+ctrlResponder _ = return ()
 
 
 verbose :: Config -> String -> IO ()
 verbose c s = when (cVerbose c) $ putStrLn s
-
-recvMessagesTimeout :: (O.Transport t) => Double -> t -> IO [O.Message]
-recvMessagesTimeout n sock = fmap (maybe [] O.packetMessages) $ O.recvPacketTimeout n sock
 
 
 streamGetcps :: Stream -> IO O.Time
