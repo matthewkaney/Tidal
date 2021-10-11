@@ -19,9 +19,12 @@ module Sound.Tidal.OSC where
 -}
 
 import GHC.Float (float2Double)
-import Sound.OSC.FD
+import Sound.OSC.FD hiding (Packet)
 
 import Sound.Tidal.Pattern
+
+data Packet = Bundle { bTime :: Double, bPackets :: [Packet] } |
+              Message { mAddress :: String, mArgs :: [Value] }
 
 toDatum :: Value -> Datum
 toDatum (VF x) = float x
