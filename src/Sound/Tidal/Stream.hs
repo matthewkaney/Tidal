@@ -37,6 +37,7 @@ import qualified Network.Socket          as N
 import           Sound.Tidal.Config
 import           Sound.Tidal.Core (stack, silence, (#))
 import           Sound.Tidal.ID
+import           Sound.Tidal.OSC
 import           Sound.Tidal.Params (pS)
 import           Sound.Tidal.Pattern
 import qualified Sound.Tidal.Tempo as T
@@ -254,17 +255,6 @@ startTidal target config = startStream config [(target, [superdirtShape])]
 
 startMulti :: [Target] -> Config -> IO ()
 startMulti _ _ = hPutStrLn stderr $ "startMulti has been removed, please check the latest documentation on tidalcycles.org"
-
-toDatum :: Value -> O.Datum
-toDatum (VF x) = O.float x
-toDatum (VN x) = O.float x
-toDatum (VI x) = O.int32 x
-toDatum (VS x) = O.string x
-toDatum (VR x) = O.float $ ((fromRational x) :: Double)
-toDatum (VB True) = O.int32 (1 :: Int)
-toDatum (VB False) = O.int32 (0 :: Int)
-toDatum (VX xs) = O.Blob $ O.blob_pack xs
-toDatum _ = error "toDatum: unhandled value"
   
 toData :: OSC -> Event ValueMap -> Maybe [O.Datum]
 toData (OSC {args = ArgList as}) e = fmap (fmap (toDatum)) $ sequence $ map (\(n,v) -> Map.lookup n (value e) <|> v) as
