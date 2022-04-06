@@ -35,6 +35,7 @@ library
                        Sound.Tidal.Core
                        Sound.Tidal.EspGrid
                        Sound.Tidal.ID
+                       Sound.Tidal.OSC.Listener
                        Sound.Tidal.Params
                        Sound.Tidal.ParseBP
                        Sound.Tidal.Pattern
