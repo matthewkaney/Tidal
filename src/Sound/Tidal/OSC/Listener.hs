@@ -4,9 +4,13 @@ import Data.Map.Strict (Map, empty, insert, keys)
 import Control.Concurrent.MVar (MVar, newMVar, modifyMVar_, readMVar)
 import Control.Monad (void)
 
+import Sound.Tidal.Pattern (Value)
+
 import Sound.OSC.FD as O
 
-type Action = String -> IO ()
+data OSCMessage = Message { path :: String, args :: [Value] }
+
+type Action = OSCMessage -> IO (Maybe OSCMessage)
 type ActionMap = Map String Action
 
 data OSCSocket = OSCSocket { actions :: MVar ActionMap }
