@@ -46,7 +46,7 @@ import           Data.List (sortOn)
 import           System.Random (getStdRandom, randomR)
 import           Sound.Tidal.Show ()
 import           Data.Word (Word8)
-import           Sound.Tidal.OSC.Listener
+import           Sound.Tidal.OSC
 
 import           Sound.Tidal.Version
 
