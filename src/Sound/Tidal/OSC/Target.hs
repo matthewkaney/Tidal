@@ -1,7 +1,8 @@
-module Sound.Tidal.OSC.Target
-  ( Target, tick, Address(..), OSCShape, OSCTarget, oscTarget, send, sendPacket ) where
+{-# LANGUAGE ExistentialQuantification #-}
 
-import Data.Function
+module Sound.Tidal.OSC.Target
+  ( Target, tick, end, GenericTarget(..), Address(..), OSCShape, OSCTarget, oscTarget, send, sendPacket ) where
+
 import qualified Data.Map.Strict as Map
 import Data.Maybe
 import Network.Socket hiding (socket)
@@ -12,6 +13,7 @@ import Sound.Tidal.Pattern
 
 class Target a where
   tick :: a -> Event ValueMap -> IO ()
+  end :: a -> IO ()
 
 -- | Wrapper for a list of heterogeneous targets
 data GenericTarget = forall a. Target a => GenericTarget a | EmptyTarget

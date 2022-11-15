@@ -29,6 +29,7 @@ import           Control.Monad (forM_, when)
 import Data.Coerce (coerce)
 import qualified Data.Map.Strict as Map
 import           Data.Maybe (fromJust, fromMaybe, catMaybes, isJust)
+import           Data.Sequence (Seq, (|>), empty, lookup, update)
 import qualified Control.Exception as E
 import Foreign
 import Foreign.C.Types
@@ -41,6 +42,7 @@ import           Sound.Tidal.Config
 import           Sound.Tidal.Core (stack, (#))
 import           Sound.Tidal.ID
 import qualified Sound.Tidal.Link as Link
+import qualified Sound.Tidal.OSC.Target as New
 import           Sound.Tidal.Params (pS)
 import           Sound.Tidal.Pattern
 import qualified Sound.Tidal.Tempo as T
@@ -63,6 +65,7 @@ data Stream = Stream {sConfig :: Config,
                       sPMapMV :: MVar PlayMap,
                       sActionsMV :: MVar [T.TempoAction],
                       sGlobalFMV :: MVar (ControlPattern -> ControlPattern),
+                      sTargets :: MVar (Seq New.GenericTarget),
                       sCxs :: [Cx]
                      }
 
@@ -206,6 +209,7 @@ startStream config oscmap
        bussesMV <- newMVar []
        globalFMV <- newMVar id
        actionsMV <- newEmptyMVar
+       targets <- newMVar Data.Sequence.empty
 
        tidal_status_string >>= verbose config
        verbose config $ "Listening for external controls on " ++ cCtrlAddr config ++ ":" ++ show (cCtrlPort config)
@@ -231,7 +235,8 @@ startStream config oscmap
                             sPMapMV = pMapMV,
                             sActionsMV = actionsMV,
                             sGlobalFMV = globalFMV,
-                            sCxs = cxs
+                            sCxs = cxs,
+                            sTargets = targets
                            }
        sendHandshakes stream
        let ac = T.ActionHandler {
@@ -244,6 +249,24 @@ startStream config oscmap
        -- Spawn a thread to handle OSC control messages
        _ <- forkIO $ ctrlResponder 0 config stream
        return stream
+
+addTarget :: New.Target a => Stream -> a -> IO Int
+addTarget Stream{sTargets=ts} t = length <$> withMVar ts append
+  where
+    append :: Seq New.GenericTarget -> IO (Seq New.GenericTarget)
+    append tseq = return $ tseq |> (New.GenericTarget t)
+
+removeTarget :: Stream -> Int -> IO ()
+removeTarget Stream {sTargets=ts} i = modifyMVar_ ts endAndRemove
+  where
+    endAndRemove :: Seq New.GenericTarget -> IO (Seq New.GenericTarget)
+    endAndRemove tseq = endTarget (Data.Sequence.lookup i tseq) >> (emptyTarget tseq)
+    endTarget :: Maybe New.GenericTarget -> IO ()
+    endTarget (Just (New.GenericTarget t)) = New.end t
+    endTarget _ = return ()
+    emptyTarget :: Seq New.GenericTarget -> IO (Seq New.GenericTarget)
+    emptyTarget tseq = return (update i New.EmptyTarget tseq)
+    
 
 -- It only really works to handshake with one target at the moment..
 sendHandshakes :: Stream -> IO ()
