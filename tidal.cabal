@@ -34,6 +34,8 @@ library
                        Sound.Tidal.Context
                        Sound.Tidal.Core
                        Sound.Tidal.ID
+                       Sound.Tidal.OSC.Core
+                       Sound.Tidal.OSC.Target
                        Sound.Tidal.Params
                        Sound.Tidal.ParseBP
                        Sound.Tidal.Pattern
@@ -44,6 +46,7 @@ library
                        Sound.Tidal.Simple
                        Sound.Tidal.Stream
                        Sound.Tidal.StreamTypes
+                       Sound.Tidal.Target.Superdirt
                        Sound.Tidal.Tempo
                        Sound.Tidal.Time
                        Sound.Tidal.Transition

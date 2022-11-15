@@ -1,6 +1,9 @@
 module Sound.Tidal.OSC.Target
-  ( Target, tick, OSCTarget, oscTarget, send, sendPacket ) where
+  ( Target, tick, Address(..), OSCShape, OSCTarget, oscTarget, send, sendPacket ) where
 
+import Data.Function
+import qualified Data.Map.Strict as Map
+import Data.Maybe
 import Network.Socket hiding (socket)
 import Network.Socket.ByteString hiding (send)
 
@@ -8,23 +11,26 @@ import Sound.Tidal.OSC.Core
 import Sound.Tidal.Pattern
 
 class Target a where
-  tick :: a -> IO ()
+  tick :: a -> Event ValueMap -> IO ()
+
+-- | Wrapper for a list of heterogeneous targets
+data GenericTarget = forall a. Target a => GenericTarget a | EmptyTarget
 
 type OSCShape = Event ValueMap -> [Packet]
 
 data OSCTarget = OSCTarget {
   oscName :: String,
+  oscShape ::OSCShape,
   oscSocket :: Socket
 }
 
 instance Target OSCTarget where
-  tick t = return ()
+  tick t e = foldr ((>>) . (sendPacket t)) (return ()) $ oscShape t e
 
-oscTarget :: String -> String -> Int -> IO OSCTarget
-oscTarget name addr port = OSCTarget name <$> socket
+oscTarget :: String -> Address -> OSCShape -> IO OSCTarget
+oscTarget name addr shape = OSCTarget name shape <$> socket
   where
-    hints = Just defaultHints { addrSocketType = Datagram, addrFamily = AF_INET }
-    socket = do i:_ <- getAddrInfo hints (Just addr) (Just $ show port)
+    socket = do i <- resolve addr
                 s <- openSocket i
                 connect s (addrAddress i)
                 return s
@@ -36,17 +42,18 @@ send target path args = sendPacket target $ Message path args
 sendPacket :: OSCTarget -> Packet -> IO ()
 sendPacket target packet = sendAll (oscSocket target) (encode packet)
 
--- TODO: This doesn't fully implement existing context messages, because
--- the pattern id, context, and event aren't available from here...
-contextTarget :: String -> OSCShape
-contextTarget path = (map contextToMessage) . contextPosition . context
+contextShape :: String -> OSCShape
+contextShape path ev = (map contextToMessage) . contextPosition . context $ ev
   where contextToMessage :: ((Int,Int),(Int,Int)) -> Packet
-        contextToMessage ((x, y), (x', y'))
-            = Message path (map VI [x,y,x',y'])
--- toOSC _ pe (OSCContext oscpath)
---   = map cToM $ contextPosition $ context $ peEvent pe
---   where cToM :: ((Int,Int),(Int,Int)) -> (Double, Bool, O.Message)
---         cToM ((x, y), (x',y')) = (ts,
---                                   False, -- bus message ?
---                                   O.Message oscpath $ (O.string ident):(O.float (peDelta pe)):(O.float cyc):(map O.int32 [x,y,x',y'])
---                                  )
+        contextToMessage ((x, y), (x', y')) = Message path $ (VS ident):(VF delta):(VF cyc):(map VI [x,y,x',y'])
+        ident = fromMaybe "unknown" $ Map.lookup "_id_" (value ev) >>= getS
+        cyc = fromRational . start . wholeOrPart $ ev
+        delta = error "Delta isn't currently implemented"
+
+data Address = Address String Int | Port Int
+
+resolve :: Address -> IO AddrInfo
+resolve (Port port) = resolve (Address "127.0.0.1" port)
+resolve (Address address port)
+  = head <$> getAddrInfo hints (Just address) (Just $ show port)
+    where hints = Just defaultHints { addrSocketType = Datagram, addrFamily = AF_INET }
