@@ -12,7 +12,8 @@ module Sound.Tidal.OSC.Target
     OSCTarget,
     oscTarget,
     send,
-    sendPacket
+    sendPacket,
+    contextShape,
   ) where
 
 import qualified Data.Map.Strict as Map
@@ -26,9 +27,14 @@ import Sound.Tidal.StreamTypes
 
 class Target a where
   startTarget :: a -> IO ()
+  startTarget _ = return ()
+
   nudgeTarget :: a -> Double -> IO ()
-  tickTarget :: a -> ProcessedEvent -> IO ()
+
+  tickTarget :: a -> Double -> ProcessedEvent -> IO ()
+
   endTarget :: a -> IO ()
+  endTarget _ = return ()
 
 -- | Wrapper type for a list of heterogeneous targets
 data GenericTarget = forall a. Target a => GenericTarget a | EmptyTarget
@@ -46,7 +52,7 @@ instance Target OSCTarget where
 
   nudgeTarget _ _ = return ()
 
-  tickTarget t e
+  tickTarget t _ e
     = foldr ((>>) . (sendPacket t)) (return ()) $ oscShape t (peEvent e)
   
   endTarget _ = return ()

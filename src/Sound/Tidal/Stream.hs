@@ -54,7 +54,6 @@ import           Sound.Tidal.Version
 import Sound.Tidal.StreamTypes as Sound.Tidal.Stream
 
 data Stream = Stream {sConfig :: Config,
-                      sBusses :: MVar [Int],
                       sStateMV :: MVar ValueMap,
                       -- sOutput :: MVar ControlPattern,
                       sLink :: Link.AbletonLink,
@@ -82,7 +81,7 @@ startStream config oscmap
        verbose config $ "Listening for external controls on " ++ cCtrlAddr config ++ ":" ++ show (cCtrlPort config)
        listen <- openListener config
 
-       cxs <- mapM (legacyCx $ cCtrlBroadcast config) oscmap
+       cxs <- mapM (legacyCx config) oscmap
        targets <- newMVar $ Data.Sequence.fromList $ map New.GenericTarget cxs
 
        let bpm = (coerce defaultCps) * 60 * (cBeatsPerCycle config)
@@ -246,7 +245,7 @@ doTick stream st ops sMap =
         patstack = sGlobalF $ playStack pMap
         cps = ((T.beatToCycles ops) bpm) / 60
         sMap' = Map.insert "_cps" (VF $ coerce cps) sMap
-        extraLatency = tickNudge st
+        nudge = tickNudge st
         -- First the state is used to query the pattern
         es = sortOn (start . part) $ query patstack (State {arc = tickArc st,
                                                         controls = sMap'
@@ -256,7 +255,7 @@ doTick stream st ops sMap =
         (sMap'', es') = resolveState sMap' es
       tes <- processCps ops es'
       -- For each OSC target
-      let tickTarget (New.GenericTarget t) = forM_ tes (New.tickTarget t)
+      let tickTarget (New.GenericTarget t) = forM_ tes (New.tickTarget t nudge)
           tickTarget (New.EmptyTarget) = return ()
       forM_ targets tickTarget
       sMap'' `seq` return sMap'')

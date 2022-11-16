@@ -5,7 +5,7 @@ module Sound.Tidal.Target.Legacy where
 import           Control.Applicative ((<|>))
 import           Control.Concurrent
 import qualified Control.Exception as E
-import           Control.Monad (forM_)
+import           Control.Monad (forM_, when)
 import           Data.Coerce (coerce)
 import qualified Data.Map.Strict as Map
 import           Data.Maybe
@@ -16,6 +16,7 @@ import           System.IO (hPutStrLn, stderr)
 import qualified Sound.OSC.FD as O
 import qualified Network.Socket as N
 
+import           Sound.Tidal.Config
 import qualified Sound.Tidal.OSC.Target as New
 import           Sound.Tidal.Pattern
 import           Sound.Tidal.Show ()
@@ -28,7 +29,8 @@ data Cx = Cx {cxTarget :: Target,
               cxOSCs :: [OSC],
               cxAddr :: N.AddrInfo,
               cxBusAddr :: Maybe N.AddrInfo,
-              cxBusses :: MVar [Int]
+              cxBusses :: MVar [Int],
+              cxVerbose :: Bool
              }
   -- deriving (Show)
 
@@ -138,34 +140,35 @@ dirtShape = OSC "/play" $ ArgList [("cps", fDefault 0),
                                    -- ("id", iDefault 0)
                                   ]
 
-legacyCx :: Bool -> (Target, [OSC]) -> IO Cx
-legacyCx isBroadcast (target, os) = do busses <- newMVar []
-                                       remote_addr <- resolve (oAddress target) (show $ oPort target)
-                                       remote_bus_addr <- if isJust $ oBusPort target
-                                                            then Just <$> resolve (oAddress target) (show $ fromJust $ oBusPort target)
-                                                            else return Nothing
-                                       let broadcast = if isBroadcast then 1 else 0
-                                       u <- O.udp_socket (\sock sockaddr -> do N.setSocketOption sock N.Broadcast broadcast
-                                                                               N.connect sock sockaddr
-                                                         ) (oAddress target) (oPort target)
-                                       return $ Cx {cxUDP = u, cxAddr = remote_addr, cxBusAddr = remote_bus_addr, cxTarget = target, cxOSCs = os, cxBusses = busses}
+legacyCx :: Config -> (Target, [OSC]) -> IO Cx
+legacyCx config (target, os)
+  = do busses <- newMVar []
+       remote_addr <- resolve (oAddress target) (show $ oPort target)
+       remote_bus_addr <- if isJust $ oBusPort target
+                            then Just <$> resolve (oAddress target) (show $ fromJust $ oBusPort target)
+                            else return Nothing
+       let broadcast = if (cCtrlBroadcast config) then 1 else 0
+           verbose = cVerbose config
+       u <- O.udp_socket (\sock sockaddr -> do N.setSocketOption sock N.Broadcast broadcast
+                                               N.connect sock sockaddr
+                         ) (oAddress target) (oPort target)
+       return $ Cx {cxUDP = u, cxAddr = remote_addr, cxBusAddr = remote_bus_addr, cxTarget = target, cxOSCs = os, cxBusses = busses, cxVerbose = verbose}
 
 instance New.Target Cx where
   startTarget _ = return ()
   
   nudgeTarget _ _ = return ()
 
-  tickTarget cx ev
+  tickTarget cx nudge ev
     = do busses <- readMVar (cxBusses cx)
          let target = cxTarget cx
              oscs = cxOSCs cx
              -- Latency is configurable per target.
              latency = oLatency target
              ms = concatMap (toOSC busses ev) oscs
-             extraLatency = 0.0 -- TODO
          -- send the events to the OSC target
          forM_ ms $ \ m -> (do
-           send (Just $ cxUDP cx) cx latency extraLatency m) `E.catch` \ (e :: E.SomeException) -> do
+           send (Just $ cxUDP cx) cx latency nudge m) `E.catch` \ (e :: E.SomeException) -> do
            hPutStrLn stderr $ "Failed to send. Is the '" ++ oName target ++ "' target running? " ++ show e
 
   endTarget _ = return ()
@@ -175,12 +178,9 @@ resolve host port = do let hints = N.defaultHints { N.addrSocketType = N.Stream 
                        addr:_ <- N.getAddrInfo (Just hints) (Just host) (Just port)
                        return addr
 
--- It only really works to handshake with one target at the moment..
--- sendHandshakes :: Stream -> IO ()
--- sendHandshakes stream = mapM_ sendHandshake $ filter (oHandshake . cxTarget) (sCxs stream)
 sendHandshake :: Cx -> IO ()
 sendHandshake cx = if (oHandshake $ cxTarget cx)
-                      then sendO False Nothing cx $ O.Message "/dirt/handshake" []
+                      then sendO False (Just $ cxUDP cx) cx $ O.Message "/dirt/handshake" []
                       else return ()
 
 sendO :: Bool -> (Maybe O.UDP) -> Cx -> O.Message -> IO ()
@@ -329,27 +329,32 @@ send listen cx latency extraLatency (time, isBusMsg, m)
           target = cxTarget cx
           timeWithLatency = time - latency + extraLatency
 
-{-
-  = do ms <- recvMessagesTimeout 2 sock
+busResponder :: Int -> Cx -> IO ()
+busResponder waits cx
+  = do ms <- recvMessagesTimeout 2 (cxUDP cx)
        if (null ms)
          then do checkHandshake -- there was a timeout, check handshake
-                 ctrlResponder (waits+1) c stream
+                 busResponder (waits+1) cx
          else do mapM_ act ms
-                 ctrlResponder 0 c stream
+                 busResponder 0 cx
      where
-        checkHandshake = do busses <- readMVar (sBusses stream)
-                            when (null busses) $ do when  (waits == 0) $ verbose c $ "Waiting for SuperDirt (v.1.7.2 or higher).."
-                                                    sendHandshakes stream
+        checkHandshake = do busses <- readMVar (cxBusses cx)
+                            when (null busses) $ do when  (waits == 0) $ verboseCx cx $ "Waiting for SuperDirt (v.1.7.2 or higher).."
+                                                    sendHandshake cx
 
-        act (O.Message "/dirt/hello" _) = sendHandshakes stream
-        act (O.Message "/dirt/handshake/reply" xs) = do prev <- swapMVar (sBusses stream) $ bufferIndices xs
+        act (O.Message "/dirt/hello" _) = sendHandshake cx
+        act (O.Message "/dirt/handshake/reply" xs) = do prev <- swapMVar (cxBusses cx) $ bufferIndices xs
                                                         -- Only report the first time..
-                                                        when (null prev) $ verbose c $ "Connected to SuperDirt."
+                                                        when (null prev) $ verboseCx cx $ "Connected to SuperDirt."
                                                         return ()
           where 
             bufferIndices [] = []
             bufferIndices (x:xs') | x == (O.ASCII_String $ O.ascii "&controlBusIndices") = catMaybes $ takeWhile isJust $ map O.datum_integral xs'
-                                  | otherwise = bufferIndices xs' -}
+                                  | otherwise = bufferIndices xs'
+        act m = hPutStrLn stderr $ "Unhandled OSC: " ++ show m
+
+verboseCx :: Cx -> String -> IO ()
+verboseCx c s = when (cxVerbose c) $ putStrLn s
 
 recvMessagesTimeout :: (O.Transport t) => Double -> t -> IO [O.Message]
 recvMessagesTimeout n sock = fmap (maybe [] O.packetMessages) $ O.recvPacketTimeout n sock
