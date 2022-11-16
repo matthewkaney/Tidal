@@ -152,7 +152,11 @@ legacyCx config (target, os)
        u <- O.udp_socket (\sock sockaddr -> do N.setSocketOption sock N.Broadcast broadcast
                                                N.connect sock sockaddr
                          ) (oAddress target) (oPort target)
-       return $ Cx {cxUDP = u, cxAddr = remote_addr, cxBusAddr = remote_bus_addr, cxTarget = target, cxOSCs = os, cxBusses = busses, cxVerbose = verbose}
+       let cx = Cx {cxUDP = u, cxAddr = remote_addr, cxBusAddr = remote_bus_addr, cxTarget = target, cxOSCs = os, cxBusses = busses, cxVerbose = verbose}
+       -- Send initial handshake and set up a process for handling the response
+       sendHandshake cx
+       _ <- forkIO (busResponder 0 cx)
+       return cx
 
 instance New.Target Cx where
   startTarget _ = return ()
