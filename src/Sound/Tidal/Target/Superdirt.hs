@@ -40,7 +40,10 @@ superdirt = do
                 }
 
 instance Target SuperdirtTarget where
-  tick sd = tick (sdTarget sd) >> tick (sdBusTarget sd)
+  startTarget sd = startTarget (sdTarget sd) >> startTarget (sdBusTarget sd)
+  nudgeTarget sd n = nudgeTarget (sdTarget sd) n >> nudgeTarget (sdBusTarget sd) n
+  tickTarget sd = tickTarget (sdTarget sd) >> tickTarget (sdBusTarget sd)
+  endTarget sd = endTarget (sdTarget sd) >> endTarget (sdBusTarget sd)
 
 mergeAddr :: Address -> Address -> Address
 mergeAddr (Address a _) (Port p) = Address a p

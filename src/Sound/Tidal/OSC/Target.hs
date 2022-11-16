@@ -1,7 +1,19 @@
 {-# LANGUAGE ExistentialQuantification #-}
 
 module Sound.Tidal.OSC.Target
-  ( Target, tick, end, GenericTarget(..), Address(..), OSCShape, OSCTarget, oscTarget, send, sendPacket ) where
+  ( Target,
+    startTarget,
+    nudgeTarget,
+    tickTarget,
+    endTarget,
+    GenericTarget(..),
+    Address(..),
+    OSCShape,
+    OSCTarget,
+    oscTarget,
+    send,
+    sendPacket
+  ) where
 
 import qualified Data.Map.Strict as Map
 import Data.Maybe
@@ -10,12 +22,15 @@ import Network.Socket.ByteString hiding (send)
 
 import Sound.Tidal.OSC.Core
 import Sound.Tidal.Pattern
+import Sound.Tidal.StreamTypes
 
 class Target a where
-  tick :: a -> Event ValueMap -> IO ()
-  end :: a -> IO ()
+  startTarget :: a -> IO ()
+  nudgeTarget :: a -> Double -> IO ()
+  tickTarget :: a -> ProcessedEvent -> IO ()
+  endTarget :: a -> IO ()
 
--- | Wrapper for a list of heterogeneous targets
+-- | Wrapper type for a list of heterogeneous targets
 data GenericTarget = forall a. Target a => GenericTarget a | EmptyTarget
 
 type OSCShape = Event ValueMap -> [Packet]
@@ -27,7 +42,14 @@ data OSCTarget = OSCTarget {
 }
 
 instance Target OSCTarget where
-  tick t e = foldr ((>>) . (sendPacket t)) (return ()) $ oscShape t e
+  startTarget _ = return ()
+
+  nudgeTarget _ _ = return ()
+
+  tickTarget t e
+    = foldr ((>>) . (sendPacket t)) (return ()) $ oscShape t (peEvent e)
+  
+  endTarget _ = return ()
 
 oscTarget :: String -> Address -> OSCShape -> IO OSCTarget
 oscTarget name addr shape = OSCTarget name shape <$> socket

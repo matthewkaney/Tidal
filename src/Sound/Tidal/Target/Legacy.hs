@@ -1,12 +1,17 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 module Sound.Tidal.Target.Legacy where
 
 import           Control.Applicative ((<|>))
 import           Control.Concurrent
+import qualified Control.Exception as E
+import           Control.Monad (forM_)
 import           Data.Coerce (coerce)
 import qualified Data.Map.Strict as Map
 import           Data.Maybe
 import           Data.Word
 import           Foreign.C.Types
+import           System.IO (hPutStrLn, stderr)
 
 import qualified Sound.OSC.FD as O
 import qualified Network.Socket as N
@@ -22,7 +27,8 @@ data Cx = Cx {cxTarget :: Target,
               cxUDP :: O.UDP,
               cxOSCs :: [OSC],
               cxAddr :: N.AddrInfo,
-              cxBusAddr :: Maybe N.AddrInfo
+              cxBusAddr :: Maybe N.AddrInfo,
+              cxBusses :: MVar [Int]
              }
   -- deriving (Show)
 
@@ -133,7 +139,8 @@ dirtShape = OSC "/play" $ ArgList [("cps", fDefault 0),
                                   ]
 
 legacyCx :: Bool -> (Target, [OSC]) -> IO Cx
-legacyCx isBroadcast (target, os) = do remote_addr <- resolve (oAddress target) (show $ oPort target)
+legacyCx isBroadcast (target, os) = do busses <- newMVar []
+                                       remote_addr <- resolve (oAddress target) (show $ oPort target)
                                        remote_bus_addr <- if isJust $ oBusPort target
                                                             then Just <$> resolve (oAddress target) (show $ fromJust $ oBusPort target)
                                                             else return Nothing
@@ -141,12 +148,27 @@ legacyCx isBroadcast (target, os) = do remote_addr <- resolve (oAddress target) 
                                        u <- O.udp_socket (\sock sockaddr -> do N.setSocketOption sock N.Broadcast broadcast
                                                                                N.connect sock sockaddr
                                                          ) (oAddress target) (oPort target)
-                                       return $ Cx {cxUDP = u, cxAddr = remote_addr, cxBusAddr = remote_bus_addr, cxTarget = target, cxOSCs = os}
+                                       return $ Cx {cxUDP = u, cxAddr = remote_addr, cxBusAddr = remote_bus_addr, cxTarget = target, cxOSCs = os, cxBusses = busses}
 
 instance New.Target Cx where
-  tick _ _ = return ()
+  startTarget _ = return ()
+  
+  nudgeTarget _ _ = return ()
 
-  end _ = return ()
+  tickTarget cx ev
+    = do busses <- readMVar (cxBusses cx)
+         let target = cxTarget cx
+             oscs = cxOSCs cx
+             -- Latency is configurable per target.
+             latency = oLatency target
+             ms = concatMap (toOSC busses ev) oscs
+             extraLatency = 0.0 -- TODO
+         -- send the events to the OSC target
+         forM_ ms $ \ m -> (do
+           send (Just $ cxUDP cx) cx latency extraLatency m) `E.catch` \ (e :: E.SomeException) -> do
+           hPutStrLn stderr $ "Failed to send. Is the '" ++ oName target ++ "' target running? " ++ show e
+
+  endTarget _ = return ()
 
 resolve :: String -> String -> IO N.AddrInfo
 resolve host port = do let hints = N.defaultHints { N.addrSocketType = N.Stream }

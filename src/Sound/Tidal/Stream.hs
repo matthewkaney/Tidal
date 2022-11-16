@@ -62,8 +62,7 @@ data Stream = Stream {sConfig :: Config,
                       sPMapMV :: MVar PlayMap,
                       sActionsMV :: MVar [T.TempoAction],
                       sGlobalFMV :: MVar (ControlPattern -> ControlPattern),
-                      sTargets :: MVar (Seq New.GenericTarget),
-                      sCxs :: [Cx]
+                      sTargets :: MVar (Seq New.GenericTarget)
                      }
 
 defaultCps :: O.Time
@@ -76,7 +75,6 @@ startStream :: Config -> [(Target, [OSC])] -> IO Stream
 startStream config oscmap 
   = do sMapMV <- newMVar Map.empty
        pMapMV <- newMVar Map.empty
-       bussesMV <- newMVar []
        globalFMV <- newMVar id
        actionsMV <- newEmptyMVar
 
@@ -90,14 +88,12 @@ startStream config oscmap
        let bpm = (coerce defaultCps) * 60 * (cBeatsPerCycle config)
        abletonLink <- Link.create bpm
        let stream = Stream {sConfig = config,
-                            sBusses = bussesMV,
                             sStateMV  = sMapMV,
                             sLink = abletonLink,
                             sListen = listen,
                             sPMapMV = pMapMV,
                             sActionsMV = actionsMV,
                             sGlobalFMV = globalFMV,
-                            sCxs = cxs,
                             sTargets = targets
                            }
        let ac = T.ActionHandler {
@@ -112,7 +108,7 @@ startStream config oscmap
        return stream
 
 addTarget :: New.Target a => Stream -> a -> IO Int
-addTarget Stream{sTargets=ts} t = length <$> withMVar ts append
+addTarget Stream{sTargets=ts} t = New.startTarget t >> length <$> withMVar ts append
   where
     append :: Seq New.GenericTarget -> IO (Seq New.GenericTarget)
     append tseq = return $ tseq |> (New.GenericTarget t)
@@ -123,7 +119,7 @@ removeTarget Stream {sTargets=ts} i = modifyMVar_ ts endAndRemove
     endAndRemove :: Seq New.GenericTarget -> IO (Seq New.GenericTarget)
     endAndRemove tseq = endTarget (Data.Sequence.lookup i tseq) >> (emptyTarget tseq)
     endTarget :: Maybe New.GenericTarget -> IO ()
-    endTarget (Just (New.GenericTarget t)) = New.end t
+    endTarget (Just (New.GenericTarget t)) = New.endTarget t
     endTarget _ = return ()
     emptyTarget :: Seq New.GenericTarget -> IO (Seq New.GenericTarget)
     emptyTarget tseq = return (update i New.EmptyTarget tseq)
@@ -243,11 +239,10 @@ doTick stream st ops sMap =
     setPreviousPatternOrSilence stream
     return sMap) (do
       pMap <- readMVar (sPMapMV stream)
-      busses <- readMVar (sBusses stream)
       sGlobalF <- readMVar (sGlobalFMV stream)
       bpm <- (T.getTempo ops)
+      targets <- readMVar (sTargets stream)
       let
-        cxs = sCxs stream
         patstack = sGlobalF $ playStack pMap
         cps = ((T.beatToCycles ops) bpm) / 60
         sMap' = Map.insert "_cps" (VF $ coerce cps) sMap
@@ -261,15 +256,9 @@ doTick stream st ops sMap =
         (sMap'', es') = resolveState sMap' es
       tes <- processCps ops es'
       -- For each OSC target
-      forM_ cxs $ \cx@(Cx target _ oscs _ _) -> do
-        -- Latency is configurable per target.
-        -- Latency is only used when sending events live.
-        let latency = oLatency target
-            ms = concatMap (\e ->  concatMap (toOSC busses e) oscs) tes
-        -- send the events to the OSC target
-        forM_ ms $ \ m -> (do
-          send (sListen stream) cx latency extraLatency m) `E.catch` \ (e :: E.SomeException) -> do
-          hPutStrLn stderr $ "Failed to send. Is the '" ++ oName target ++ "' target running? " ++ show e
+      let tickTarget (New.GenericTarget t) = forM_ tes (New.tickTarget t)
+          tickTarget (New.EmptyTarget) = return ()
+      forM_ targets tickTarget
       sMap'' `seq` return sMap'')
 
 setPreviousPatternOrSilence :: Stream -> IO ()
