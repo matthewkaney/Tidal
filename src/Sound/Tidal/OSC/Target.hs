@@ -3,7 +3,6 @@
 module Sound.Tidal.OSC.Target
   ( Target,
     startTarget,
-    nudgeTarget,
     tickTarget,
     endTarget,
     GenericTarget(..),
@@ -11,6 +10,10 @@ module Sound.Tidal.OSC.Target
     OSCShape,
     OSCTarget,
     oscTarget,
+    OSCArg,
+    required,
+    optional,
+    osc,
     send,
     sendPacket,
     contextShape,
@@ -29,8 +32,6 @@ class Target a where
   startTarget :: a -> IO ()
   startTarget _ = return ()
 
-  nudgeTarget :: a -> Double -> IO ()
-
   tickTarget :: a -> Double -> ProcessedEvent -> IO ()
 
   endTarget :: a -> IO ()
@@ -39,7 +40,7 @@ class Target a where
 -- | Wrapper type for a list of heterogeneous targets
 data GenericTarget = forall a. Target a => GenericTarget a | EmptyTarget
 
-type OSCShape = Event ValueMap -> [Packet]
+type OSCShape = ProcessedEvent -> [Packet]
 
 data OSCTarget = OSCTarget {
   oscName :: String,
@@ -50,10 +51,8 @@ data OSCTarget = OSCTarget {
 instance Target OSCTarget where
   startTarget _ = return ()
 
-  nudgeTarget _ _ = return ()
-
   tickTarget t _ e
-    = foldr ((>>) . (sendPacket t)) (return ()) $ oscShape t (peEvent e)
+    = foldr ((>>) . (sendPacket t)) (return ()) $ oscShape t e
   
   endTarget _ = return ()
 
@@ -73,14 +72,29 @@ sendPacket :: OSCTarget -> Packet -> IO ()
 sendPacket target packet = sendAll (oscSocket target) (encode packet)
 
 contextShape :: String -> OSCShape
-contextShape path ev = (map contextToMessage) . contextPosition . context $ ev
-  where contextToMessage :: ((Int,Int),(Int,Int)) -> Packet
+contextShape path pev = (map contextToMessage) . contextPosition . context $ ev
+  where ev = peEvent pev
+        contextToMessage :: ((Int,Int),(Int,Int)) -> Packet
         contextToMessage ((x, y), (x', y')) = Message path $ (VS ident):(VF delta):(VF cyc):(map VI [x,y,x',y'])
         ident = fromMaybe "unknown" $ Map.lookup "_id_" (value ev) >>= getS
         cyc = fromRational . start . wholeOrPart $ ev
         delta = error "Delta isn't currently implemented"
 
 data Address = Address String Int | Port Int
+
+type OSCArg = (String, (Maybe Value) -> Maybe Value)
+
+required :: String -> OSCArg
+required pName = (pName, id)
+
+optional :: String -> Value -> OSCArg
+optional pName val = (pName, Just . (maybe val id))
+
+osc :: String -> [OSCArg] -> OSCShape
+osc path args ev = maybeToList $ Message path <$> toData 
+  where
+    params = (value . peEvent) ev
+    toData = sequence $ map (\(k, f) -> f $ Map.lookup k params) args
 
 resolve :: Address -> IO AddrInfo
 resolve (Port port) = resolve (Address "127.0.0.1" port)

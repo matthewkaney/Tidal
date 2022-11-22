@@ -160,8 +160,6 @@ legacyCx config (target, os)
 
 instance New.Target Cx where
   startTarget _ = return ()
-  
-  nudgeTarget _ _ = return ()
 
   tickTarget cx nudge ev
     = do busses <- readMVar (cxBusses cx)
