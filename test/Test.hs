@@ -9,7 +9,7 @@ import Sound.Tidal.PatternTest
 import Sound.Tidal.ControlTest
 import Sound.Tidal.ScalesTest
 import Sound.Tidal.ChordsTest
-import Sound.Tidal.StreamTest
+import Sound.Tidal.Target.LegacyTest
 import Sound.Tidal.UITest
 import Sound.Tidal.UtilsTest
 import Sound.Tidal.ExceptionsTest
@@ -23,7 +23,7 @@ main = microspec $ do
   Sound.Tidal.ControlTest.run
   Sound.Tidal.ScalesTest.run
   Sound.Tidal.ChordsTest.run
-  Sound.Tidal.StreamTest.run
+  Sound.Tidal.Target.LegacyTest.run
   Sound.Tidal.UITest.run
   Sound.Tidal.UtilsTest.run
   Sound.Tidal.ExceptionsTest.run

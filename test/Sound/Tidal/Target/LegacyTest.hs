@@ -1,16 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Sound.Tidal.StreamTest where
+module Sound.Tidal.Target.LegacyTest where
 
 import Test.Microspec
-import Sound.Tidal.Stream
 import Sound.Tidal.Pattern
+import Sound.Tidal.Target.Legacy
 import qualified Sound.OSC.FD as O
 import qualified Data.Map.Strict as M
 
 run :: Microspec ()
 run =
-  describe "Sound.Tidal.Stream" $ do
+  describe "Sound.Tidal.Target.Legacy" $ do
     describe "toDatum" $ do
       it "should convert VN to osc float" $ do
         toDatum (VN (Note 3.5)) `shouldBe` O.float (3.5 :: Double)
