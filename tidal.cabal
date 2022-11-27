@@ -34,6 +34,8 @@ library
                        Sound.Tidal.Context
                        Sound.Tidal.Core
                        Sound.Tidal.ID
+                       Sound.Tidal.OSC.Core
+                       Sound.Tidal.OSC.Listener
                        Sound.Tidal.Params
                        Sound.Tidal.ParseBP
                        Sound.Tidal.Pattern
