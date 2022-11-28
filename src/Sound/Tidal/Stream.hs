@@ -25,12 +25,12 @@ module Sound.Tidal.Stream (module Sound.Tidal.Stream) where
 import           Control.Applicative ((<|>))
 import           Control.Concurrent.MVar
 import           Control.Concurrent
-import           Control.Monad (forM_, when)
+import           Control.Monad (forM_, when, void)
 import Data.Coerce (coerce)
 import qualified Data.Map.Strict as Map
-import           Data.Maybe (fromJust, fromMaybe, catMaybes, isJust)
+import           Data.Maybe (fromJust, fromMaybe, catMaybes, isJust, listToMaybe)
 import qualified Control.Exception as E
-import Foreign
+import Foreign hiding (void)
 import Foreign.C.Types
 import           System.IO (hPutStrLn, stderr)
 
@@ -244,7 +244,7 @@ startStream config oscmap
        -- Spawn a thread that acts as the clock
        _ <- T.clocked config sMapMV pMapMV actionsMV ac abletonLink
        -- TODO: Attach OSC control messages to listener
-      --  _ <- forkIO $ ctrlResponder 0 config stream
+       --  _ <- forkIO $ ctrlResponder 0 config stream
        return stream
 
 -- It only really works to handshake with one target at the moment..
@@ -692,44 +692,37 @@ openListener c = E.catch run handleError
 --             bufferIndices [] = []
 --             bufferIndices (x:xs') | x == (O.ASCII_String $ O.ascii "&controlBusIndices") = catMaybes $ takeWhile isJust $ map O.datum_integral xs'
 --                                   | otherwise = bufferIndices xs'
---         -- External controller commands
---         act (O.Message "/ctrl" (O.Int32 k:v:[]))
---           = act (O.Message "/ctrl" [O.string $ show k,v])
---         act (O.Message "/ctrl" (O.ASCII_String k:v@(O.Float _):[]))
---           = add (O.ascii_to_string k) (VF (fromJust $ O.datum_floating v))
---         act (O.Message "/ctrl" (O.ASCII_String k:O.ASCII_String v:[]))
---           = add (O.ascii_to_string k) (VS (O.ascii_to_string v))
---         act (O.Message "/ctrl" (O.ASCII_String k:O.Int32 v:[]))
---           = add (O.ascii_to_string k) (VI (fromIntegral v))
---         -- Stream playback commands
---         act (O.Message "/mute" (k:[]))
---           = withID k $ streamMute stream
---         act (O.Message "/unmute" (k:[]))
---           = withID k $ streamUnmute stream
---         act (O.Message "/solo" (k:[]))
---           = withID k $ streamSolo stream
---         act (O.Message "/unsolo" (k:[]))
---           = withID k $ streamUnsolo stream
---         act (O.Message "/muteAll" [])
---           = streamMuteAll stream
---         act (O.Message "/unmuteAll" [])
---           = streamUnmuteAll stream
---         act (O.Message "/unsoloAll" [])
---           = streamUnsoloAll stream
---         act (O.Message "/hush" [])
---           = streamHush stream
---         act (O.Message "/silence" (k:[]))
---           = withID k $ streamSilence stream
---         act m = hPutStrLn stderr $ "Unhandled OSC: " ++ show m
---         add :: String -> Value -> IO ()
---         add k v = do sMap <- takeMVar (sStateMV stream)
---                      putMVar (sStateMV stream) $ Map.insert k v sMap
---                      return ()
---         withID :: O.Datum -> (ID -> IO ()) -> IO ()
---         withID (O.ASCII_String k) func = func $ (ID . O.ascii_to_string) k
---         withID (O.Int32 k) func = func $ (ID . show) k
---         withID _ _ = return ()
--- ctrlResponder _ _ _ = return ()
+
+attachListenerActions :: Stream -> IO ()
+attachListenerActions stream@(Stream{sListen = Just listener, sStateMV = state})
+  = do let act :: String -> ([Value] -> IO ()) -> IO ()
+           act a f = void $ receive listener a f
+       
+       -- General Information
+       _ <- reply listener "/version"
+              (const $ return [Message "/tidal/version" [VS tidal_version]])
+       
+       -- External controller commands
+       let ctrl :: [Value] -> IO ()
+           ctrl (v1:v2:[]) = mapM_ add (valueToID v1)
+             where add k = modifyMVar_ state (return . Map.insert (fromID k) v2)
+           ctrl _ = return () -- TODO: Throw an error?
+       act "/ctrl" ctrl
+
+       -- Stream playback commands
+       let withID :: (ID -> IO ()) -> [Value] -> IO ()
+           withID f vs = mapM_ f (listToMaybe vs >>= valueToID)
+       act "/mute" (withID $ streamMute stream)
+       act "/unmute" (withID $ streamUnmute stream)
+       act "/solo" (withID $ streamSolo stream)
+       act "/unsolo" (withID $ streamUnsolo stream)
+       act "/muteAll" (const $ streamMuteAll stream)
+       act "/unmuteAll" (const $ streamUnmuteAll stream)
+       act "/unsoloAll" (const $ streamUnsoloAll stream)
+       act "/hush" (const $ streamHush stream)
+       act "/silence" (withID $ streamSilence stream)
+
+attachListenerActions _ = return ()
 
 verbose :: Config -> String -> IO ()
 verbose c s = when (cVerbose c) $ putStrLn s

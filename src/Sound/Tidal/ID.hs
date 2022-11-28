@@ -1,4 +1,4 @@
-module Sound.Tidal.ID (ID(..)) where
+module Sound.Tidal.ID (ID(..), valueToID) where
 
 {-
     ID.hs - Polymorphic pattern identifiers
@@ -18,7 +18,9 @@ module Sound.Tidal.ID (ID(..)) where
     along with this library.  If not, see <http://www.gnu.org/licenses/>.
 -}
 
-import GHC.Exts ( IsString(..) )
+import GHC.Exts (IsString(..))
+
+import Sound.Tidal.Pattern (Value(..))
 
 -- | Wrapper for literals that can be coerced to a string and used as an identifier.
 -- | Similar to Show typeclass, but constrained to strings and integers and designed
@@ -39,3 +41,8 @@ instance Num ID where
 
 instance IsString ID where
   fromString = ID
+
+valueToID :: Value -> Maybe ID
+valueToID (VI x) = Just $ ID (show x)
+valueToID (VS x) = Just $ ID x
+valueToID _ = Nothing
