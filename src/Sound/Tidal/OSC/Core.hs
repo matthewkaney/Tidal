@@ -1,12 +1,24 @@
-module Sound.Tidal.OSC.Core ( Address(..), OSCTime, Packet(..), decode) where
+module Sound.Tidal.OSC.Core
+  ( Address(..),
+    resolveUDP,
+    OSCTime,
+    Packet(..),
+    decode ) where
 
 import Data.ByteString (ByteString)
+import Network.Socket
 
 import qualified Sound.OSC.Core as OSC
 
 import Sound.Tidal.Pattern
 
 data Address = Address String Int | Port Int
+
+resolveUDP :: Address -> IO AddrInfo
+resolveUDP (Port port) = resolveUDP (Address "127.0.0.1" port)
+resolveUDP (Address address port)
+  = head <$> getAddrInfo hints (Just address) (Just $ show port)
+    where hints = Just defaultHints { addrSocketType = Datagram, addrFamily = AF_INET }
 
 type OSCTime = OSC.Time
 

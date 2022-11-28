@@ -54,7 +54,8 @@ library
                        Sound.Tidal.Version
                        Paths_tidal
   Build-depends:
-      base >=4.8 && <5
+      async >= 2.2
+    , base >=4.8 && <5
     , containers < 0.7
     , colour < 2.4
     , hosc >= 0.17 && < 0.20
