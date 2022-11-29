@@ -13,7 +13,7 @@ module Sound.Tidal.OSC.Listener
 import Control.Concurrent.Async
 import Control.Concurrent.MVar
 import Control.Monad
-import Data.ByteString
+import Data.ByteString (ByteString)
 import qualified Data.Map.Strict as Map
 import Network.Socket hiding (socket)
 import Network.Socket.ByteString
@@ -92,8 +92,15 @@ incrementMVar v = do val <- takeMVar v
                      return val
 
 dispatch :: OSCListener -> (ByteString, SockAddr) -> IO ()
-dispatch l (rawData, sender) = do let packet = decode rawData
-                                  return ()
+dispatch l (rawData, sender) = handleMessages >>= sendReplies
+  where
+    handleMessages :: IO [Packet]
+    handleMessages = handle 0 (decode rawData)
+    handle :: OSCTime -> Packet
+    handle _ (Bundle t ms) = map (handle t) ms
+    handle t (Message a vs) = dispatchMessage a t vs
+    sendReplies :: [Packet] -> IO ()
+    sendReplies = mapM_ (\p -> sendTo (oscSocket l) (encode p) sender)
 
--- dispatchMessage :: OSCListener -> String -> OSCAction
--- dispatchMessage l a = return ()
+dispatchMessage :: ActionMap -> String -> OSCAction
+dispatchMessage l a = return ()
