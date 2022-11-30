@@ -45,6 +45,7 @@ oscListener address
        return OSCListener {
          oscAddress = info,
          oscSocket = socket,
+         oscActionCount = actionCount,
          oscActions = actions,
          oscDump = dump,
          oscThread = thread
@@ -92,15 +93,23 @@ incrementMVar v = do val <- takeMVar v
                      return val
 
 dispatch :: OSCListener -> (ByteString, SockAddr) -> IO ()
-dispatch l (rawData, sender) = handleMessages >>= sendReplies
+dispatch l (rawData, sender) = (readMVar $ oscActions l)
+                                 >>= handlePacket
+                                 >>= sendReplies
   where
-    handleMessages :: IO [Packet]
-    handleMessages = handle 0 (decode rawData)
-    handle :: OSCTime -> Packet
-    handle _ (Bundle t ms) = map (handle t) ms
-    handle t (Message a vs) = dispatchMessage a t vs
+    handlePacket :: ActionMap -> IO [Packet]
+    handlePacket aMap = handle aMap 0 (decode rawData)
+    handle :: ActionMap -> OSCTime -> Packet -> IO [Packet]
+    handle aMap _ (Bundle t ms) = liftM concat (mapM (handle aMap t) ms)
+    handle aMap t (Message a vs) = dispatchMessage aMap a t vs
     sendReplies :: [Packet] -> IO ()
     sendReplies = mapM_ (\p -> sendTo (oscSocket l) (encode p) sender)
 
 dispatchMessage :: ActionMap -> String -> OSCAction
-dispatchMessage l a = return ()
+dispatchMessage aMap addr t vs = maybe (return []) processActions actionList
+  where
+    actionList :: Maybe [(Int, OSCAction)]
+    actionList = Map.toList <$> Map.lookup addr aMap
+    processActions = (liftM concat) . (mapConcurrently callHandler)
+    callHandler :: (Int, OSCAction) -> IO [Packet]
+    callHandler (_, f) = f t vs
