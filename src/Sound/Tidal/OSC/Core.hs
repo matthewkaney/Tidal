@@ -3,12 +3,18 @@ module Sound.Tidal.OSC.Core
     resolveUDP,
     OSCTime,
     Packet(..),
+    OSCAction,
+    socketSend,
+    socketReceive,
+    socketReceive',
     encode,
     decode ) where
 
+import Control.Monad
 import Data.ByteString (ByteString)
 import GHC.Float
-import Network.Socket
+import Network.Socket hiding (socket)
+import Network.Socket.ByteString
 
 import qualified Sound.OSC.Core as OSC
 
@@ -25,6 +31,25 @@ resolveUDP (Address address port)
 type OSCTime = OSC.Time
 
 data Packet = Message String [Value] | Bundle OSC.Time [Packet]
+
+type OSCAction = OSCTime -> String -> [Value] -> IO [Packet]
+
+socketSend :: Socket -> Packet -> IO ()
+socketSend socket packet = sendAll socket (encode packet)
+
+socketReceive :: Socket -> OSCAction -> IO ()
+socketReceive socket f = socketReceive' socket (handlePacket 0)
+  where
+    handlePacket _ (Bundle t ms) = liftM concat (mapM (handlePacket t) ms)
+    handlePacket t (Message a vs) = f t a vs
+
+socketReceive' :: Socket -> (Packet -> IO [Packet]) -> IO ()
+socketReceive' socket f = forever (recvFrom socket 8129 >>= handleOSC)
+  where
+    handleOSC :: (ByteString, SockAddr) -> IO ()
+    handleOSC (rawData, sender) = f (decode rawData) >>= respondTo sender
+    respondTo :: SockAddr -> [Packet] -> IO ()
+    respondTo sender = mapM_ (\packet -> sendTo socket (encode packet) sender)
 
 encode :: Packet -> ByteString
 encode = OSC.encodePacket_strict . toPacket
