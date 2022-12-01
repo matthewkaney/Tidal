@@ -41,6 +41,7 @@ import           Sound.Tidal.Config
 import           Sound.Tidal.Core (stack, (#))
 import           Sound.Tidal.ID
 import qualified Sound.Tidal.Link as Link
+import           Sound.Tidal.OSC.Core
 import           Sound.Tidal.Params (pS)
 import           Sound.Tidal.Pattern
 import qualified Sound.Tidal.Tempo as T
@@ -252,21 +253,21 @@ sendHandshakes stream = mapM_ sendHandshake $ filter (oHandshake . cxTarget) (sC
                            then                                            
                              do -- send it _from_ the udp socket we're listening to, so the
                                 -- replies go back there
-                                sendO False (sListen stream) cx $ O.Message "/dirt/handshake" []
+                                sendO False (sListen stream) cx $ Message "/dirt/handshake" []
                            else
                              hPutStrLn stderr "Can't handshake with SuperCollider without control port."
 
-sendO :: Bool -> (Maybe O.UDP) -> Cx -> O.Message -> IO ()
-sendO isBusMsg (Just listen) cx msg = O.sendTo listen (O.Packet_Message msg) (N.addrAddress addr)
+sendO :: Bool -> (Maybe O.UDP) -> Cx -> Packet -> IO ()
+sendO isBusMsg (Just (O.UDP listen)) cx msg = socketSendTo listen msg (N.addrAddress addr)
   where addr | isBusMsg && isJust (cxBusAddr cx) = fromJust $ cxBusAddr cx
              | otherwise = cxAddr cx
-sendO _ Nothing cx msg = O.sendMessage (cxUDP cx) msg
+sendO _ Nothing cx msg = socketSend (O.udpSocket . cxUDP $ cx) msg
 
-sendBndl :: Bool -> (Maybe O.UDP) -> Cx -> O.Bundle -> IO ()
-sendBndl isBusMsg (Just listen) cx bndl = O.sendTo listen (O.Packet_Bundle bndl) (N.addrAddress addr)
+sendBndl :: Bool -> (Maybe O.UDP) -> Cx -> Packet -> IO ()
+sendBndl isBusMsg (Just (O.UDP listen)) cx bndl = socketSendTo listen bndl (N.addrAddress addr)
   where addr | isBusMsg && isJust (cxBusAddr cx) = fromJust $ cxBusAddr cx
              | otherwise = cxAddr cx
-sendBndl _ Nothing cx bndl = O.sendBundle (cxUDP cx) bndl
+sendBndl _ Nothing cx bndl = socketSend (O.udpSocket . cxUDP $ cx) bndl
 
 resolve :: String -> String -> IO N.AddrInfo
 resolve host port = do let hints = N.defaultHints { N.addrSocketType = N.Stream }
@@ -279,22 +280,11 @@ startTidal target config = startStream config [(target, [superdirtShape])]
 
 startMulti :: [Target] -> Config -> IO ()
 startMulti _ _ = hPutStrLn stderr $ "startMulti has been removed, please check the latest documentation on tidalcycles.org"
-
-toDatum :: Value -> O.Datum
-toDatum (VF x) = O.float x
-toDatum (VN x) = O.float x
-toDatum (VI x) = O.int32 x
-toDatum (VS x) = O.string x
-toDatum (VR x) = O.float $ ((fromRational x) :: Double)
-toDatum (VB True) = O.int32 (1 :: Int)
-toDatum (VB False) = O.int32 (0 :: Int)
-toDatum (VX xs) = O.Blob $ O.blob_pack xs
-toDatum _ = error "toDatum: unhandled value"
   
-toData :: OSC -> Event ValueMap -> Maybe [O.Datum]
-toData (OSC {args = ArgList as}) e = fmap (fmap (toDatum)) $ sequence $ map (\(n,v) -> Map.lookup n (value e) <|> v) as
+toData :: OSC -> Event ValueMap -> Maybe [Value]
+toData (OSC {args = ArgList as}) e = sequence $ map (\(n,v) -> Map.lookup n (value e) <|> v) as
 toData (OSC {args = Named rqrd}) e
-  | hasRequired rqrd = Just $ concatMap (\(n,v) -> [O.string n, toDatum v]) $ Map.toList $ value e
+  | hasRequired rqrd = Just $ concatMap (\(n,v) -> [VS n, v]) $ Map.toList $ value e
   | otherwise = Nothing
   where hasRequired [] = True
         hasRequired xs = null $ filter (not . (`elem` ks)) xs
@@ -338,7 +328,7 @@ playStack pMap = stack $ map pattern active
                                     else not (mute pState)
                         ) $ Map.elems pMap
 
-toOSC :: [Int] -> ProcessedEvent -> OSC -> [(Double, Bool, O.Message)]
+toOSC :: [Int] -> ProcessedEvent -> OSC -> [(Double, Bool, Packet)]
 toOSC busses pe osc@(OSC _ _)
   = catMaybes (playmsg:busmsgs)
       -- playmap is a ValueMap where the keys don't start with ^ and are not ""
@@ -362,26 +352,26 @@ toOSC busses pe osc@(OSC _ _)
         playmsg | peHasOnset pe = do
                   -- If there is already cps in the event, the union will preserve that.
                   let extra = Map.fromList [("cps", (VF (coerce $! peCps pe))),
-                                          ("delta", VF (T.addMicrosToOsc (peDelta pe) 0)),
-                                          ("cycle", VF (fromRational (peCycle pe))) 
-                                        ]
+                                            ("delta", VF (T.addMicrosToOsc (peDelta pe) 0)),
+                                            ("cycle", VF (fromRational (peCycle pe))) 
+                                           ]
                       addExtra = Map.union playmap' extra
                       ts = (peOnWholeOrPartOsc pe) + nudge -- + latency
                   vs <- toData osc ((peEvent pe) {value = addExtra})
                   mungedPath <- substitutePath (path osc) playmap'
                   return (ts,
                           False, -- bus message ?
-                          O.Message mungedPath vs
+                          Message mungedPath vs
                           )
                 | otherwise = Nothing
         toBus n | null busses = n
                 | otherwise = busses !!! n
         busmsgs = map
-                    (\(('^':k), (VI b)) -> do v <- Map.lookup k playmap
-                                              return $ (tsPart,
-                                                        True, -- bus message ?
-                                                        O.Message "/c_set" [O.int32 b, toDatum v]
-                                                      )
+                    (\(('^':k), b@(VI _)) -> do v <- Map.lookup k playmap
+                                                return $ (tsPart,
+                                                          True, -- bus message ?
+                                                          Message "/c_set" [b, v]
+                                                         )
                     )
                     (Map.toList busmap)
           where
@@ -389,10 +379,10 @@ toOSC busses pe osc@(OSC _ _)
         nudge = fromJust $ getF $ fromMaybe (VF 0) $ Map.lookup "nudge" $ playmap
 toOSC _ pe (OSCContext oscpath)
   = map cToM $ contextPosition $ context $ peEvent pe
-  where cToM :: ((Int,Int),(Int,Int)) -> (Double, Bool, O.Message)
+  where cToM :: ((Int,Int),(Int,Int)) -> (Double, Bool, Packet)
         cToM ((x, y), (x',y')) = (ts,
                                   False, -- bus message ?
-                                  O.Message oscpath $ (O.string ident):(O.float (peDelta pe)):(O.float cyc):(map O.int32 [x,y,x',y'])
+                                  Message oscpath $ (VS ident):(VF . realToFrac $ peDelta pe):(VF cyc):(map VI [x,y,x',y'])
                                  )
         cyc :: Double
         cyc = fromRational $ peCycle pe
@@ -542,15 +532,16 @@ setPreviousPatternOrSilence stream =
 -- Send events early using timestamp in the OSC bundle - used by Superdirt
 -- Send events early by adding timestamp to the OSC message - used by Dirt
 -- Send events live by delaying the thread
-send :: Maybe O.UDP -> Cx -> Double -> Double -> (Double, Bool, O.Message) -> IO ()
+send :: Maybe O.UDP -> Cx -> Double -> Double -> (Double, Bool, Packet) -> IO ()
 send listen cx latency extraLatency (time, isBusMsg, m)
-  | oSchedule target == Pre BundleStamp = sendBndl isBusMsg listen cx $ O.Bundle timeWithLatency [m]
+  | oSchedule target == Pre BundleStamp = sendBndl isBusMsg listen cx $ Bundle timeWithLatency [m]
   | oSchedule target == Pre MessageStamp = sendO isBusMsg listen cx $ addtime m
   | otherwise = do _ <- forkOS $ do now <- O.time
                                     threadDelay $ floor $ (timeWithLatency - now) * 1000000
                                     sendO isBusMsg listen cx m
                    return ()
-    where addtime (O.Message mpath params) = O.Message mpath ((O.int32 sec):((O.int32 usec):params))
+    where addtime (Message mpath params) = Message mpath ((VI sec):((VI usec):params))
+          addtime (Bundle t ms) = Bundle t (map addtime ms)
           ut = O.ntpr_to_ut timeWithLatency
           sec :: Int
           sec = floor ut
