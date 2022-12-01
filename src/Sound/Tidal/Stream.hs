@@ -55,7 +55,6 @@ import           Sound.Tidal.Version
 import Sound.Tidal.StreamTypes as Sound.Tidal.Stream
 
 data Stream = Stream {sConfig :: Config,
-                      sBusses :: MVar [Int],
                       sStateMV :: MVar ValueMap,
                       -- sOutput :: MVar ControlPattern,
                       sLink :: Link.AbletonLink,
@@ -70,9 +69,9 @@ data Cx = Cx {cxTarget :: Target,
               cxUDP :: O.UDP,
               cxOSCs :: [OSC],
               cxAddr :: N.AddrInfo,
-              cxBusAddr :: Maybe N.AddrInfo
+              cxBusAddr :: Maybe N.AddrInfo,
+              cxBusses :: MVar [Int]
              }
-  deriving (Show)
 
 data StampStyle = BundleStamp
                 | MessageStamp
@@ -203,7 +202,6 @@ startStream :: Config -> [(Target, [OSC])] -> IO Stream
 startStream config oscmap 
   = do sMapMV <- newMVar Map.empty
        pMapMV <- newMVar Map.empty
-       bussesMV <- newMVar []
        globalFMV <- newMVar id
        actionsMV <- newEmptyMVar
 
@@ -219,12 +217,12 @@ startStream config oscmap
                                         u <- O.udp_socket (\sock sockaddr -> do N.setSocketOption sock N.Broadcast broadcast
                                                                                 N.connect sock sockaddr
                                                           ) (oAddress target) (oPort target)
-                                        return $ Cx {cxUDP = u, cxAddr = remote_addr, cxBusAddr = remote_bus_addr, cxTarget = target, cxOSCs = os}                                        
+                                        bussesMV <- newMVar []
+                                        return $ Cx {cxUDP = u, cxAddr = remote_addr, cxBusAddr = remote_bus_addr, cxBusses = bussesMV, cxTarget = target, cxOSCs = os}                                        
                    ) oscmap
        let bpm = (coerce defaultCps) * 60 * (cBeatsPerCycle config)
        abletonLink <- Link.create bpm
        let stream = Stream {sConfig = config,
-                            sBusses = bussesMV,
                             sStateMV  = sMapMV,
                             sLink = abletonLink,
                             sListen = listen,
@@ -501,7 +499,6 @@ doTick stream st ops sMap =
     setPreviousPatternOrSilence stream
     return sMap) (do
       pMap <- readMVar (sPMapMV stream)
-      busses <- readMVar (sBusses stream)
       sGlobalF <- readMVar (sGlobalFMV stream)
       bpm <- (T.getTempo ops)
       let
@@ -519,7 +516,8 @@ doTick stream st ops sMap =
         (sMap'', es') = resolveState sMap' es
       tes <- processCps ops es'
       -- For each OSC target
-      forM_ cxs $ \cx@(Cx target _ oscs _ _) -> do
+      forM_ cxs $ \cx@(Cx target _ oscs _ _ _) -> do
+        busses <- readMVar (cxBusses cx)
         -- Latency is configurable per target.
         -- Latency is only used when sending events live.
         let latency = oLatency target
