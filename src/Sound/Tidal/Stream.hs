@@ -26,12 +26,12 @@ import           Control.Applicative ((<|>))
 import           Control.Concurrent.Async
 import           Control.Concurrent.MVar
 import           Control.Concurrent
-import           Control.Monad (forM_, when, forever)
+import           Control.Monad (forM_, when, forever, void)
 import Data.Coerce (coerce)
 import qualified Data.Map.Strict as Map
 import           Data.Maybe (fromJust, fromMaybe, catMaybes, isJust)
 import qualified Control.Exception as E
-import Foreign
+import Foreign hiding (void)
 import Foreign.C.Types
 import           System.IO (hPutStrLn, stderr)
 
@@ -219,7 +219,8 @@ startStream config oscmap
                                                                                 N.connect sock sockaddr
                                                           ) (oAddress target) (oPort target)
                                         bussesMV <- newMVar []
-                                        
+                                        if (oHandshake target) then ((void . async) $ busResponder config u bussesMV)
+                                                               else return ()
                                         return $ Cx {cxUDP = u, cxAddr = remote_addr, cxBusAddr = remote_bus_addr, cxBusses = bussesMV, cxTarget = target, cxOSCs = os}                                        
                    ) oscmap
        let bpm = (coerce defaultCps) * 60 * (cBeatsPerCycle config)
@@ -233,7 +234,6 @@ startStream config oscmap
                             sGlobalFMV = globalFMV,
                             sCxs = cxs
                            }
-       sendHandshakes stream
        let ac = T.ActionHandler {
          T.onTick = onTick stream,
          T.onSingleTick = onSingleTick stream,
@@ -242,31 +242,18 @@ startStream config oscmap
        -- Spawn a thread that acts as the clock
        _ <- T.clocked config sMapMV pMapMV actionsMV ac abletonLink
        -- Spawn a thread to handle OSC control messages
-       _ <- forkIO $ ctrlResponder stream
+       _ <- async $ ctrlResponder stream
        return stream
 
--- It only really works to handshake with one target at the moment..
-sendHandshakes :: Stream -> IO ()
-sendHandshakes stream = mapM_ sendHandshake $ filter (oHandshake . cxTarget) (sCxs stream)
-  where sendHandshake cx = if (isJust $ sListen stream)
-                           then                                            
-                             do -- send it _from_ the udp socket we're listening to, so the
-                                -- replies go back there
-                                sendO False (sListen stream) cx $ O.Message "/dirt/handshake" []
-                           else
-                             hPutStrLn stderr "Can't handshake with SuperCollider without control port."
-
-sendO :: Bool -> (Maybe O.UDP) -> Cx -> O.Message -> IO ()
-sendO isBusMsg (Just listen) cx msg = O.sendTo listen (O.Packet_Message msg) (N.addrAddress addr)
+sendO :: Bool -> Cx -> O.Message -> IO ()
+sendO isBusMsg cx msg = O.sendTo (cxUDP cx) (O.Packet_Message msg) (N.addrAddress addr)
   where addr | isBusMsg && isJust (cxBusAddr cx) = fromJust $ cxBusAddr cx
              | otherwise = cxAddr cx
-sendO _ Nothing cx msg = O.sendMessage (cxUDP cx) msg
 
-sendBndl :: Bool -> (Maybe O.UDP) -> Cx -> O.Bundle -> IO ()
-sendBndl isBusMsg (Just listen) cx bndl = O.sendTo listen (O.Packet_Bundle bndl) (N.addrAddress addr)
+sendBndl :: Bool -> Cx -> O.Bundle -> IO ()
+sendBndl isBusMsg cx bndl = O.sendTo (cxUDP cx) (O.Packet_Bundle bndl) (N.addrAddress addr)
   where addr | isBusMsg && isJust (cxBusAddr cx) = fromJust $ cxBusAddr cx
              | otherwise = cxAddr cx
-sendBndl _ Nothing cx bndl = O.sendBundle (cxUDP cx) bndl
 
 resolve :: String -> String -> IO N.AddrInfo
 resolve host port = do let hints = N.defaultHints { N.addrSocketType = N.Stream }
@@ -526,7 +513,7 @@ doTick stream st ops sMap =
             ms = concatMap (\e ->  concatMap (toOSC busses e) oscs) tes
         -- send the events to the OSC target
         forM_ ms $ \ m -> (do
-          send (sListen stream) cx latency extraLatency m) `E.catch` \ (e :: E.SomeException) -> do
+          send cx latency extraLatency m) `E.catch` \ (e :: E.SomeException) -> do
           hPutStrLn stderr $ "Failed to send. Is the '" ++ oName target ++ "' target running? " ++ show e
       sMap'' `seq` return sMap'')
 
@@ -542,13 +529,13 @@ setPreviousPatternOrSilence stream =
 -- Send events early using timestamp in the OSC bundle - used by Superdirt
 -- Send events early by adding timestamp to the OSC message - used by Dirt
 -- Send events live by delaying the thread
-send :: Maybe O.UDP -> Cx -> Double -> Double -> (Double, Bool, O.Message) -> IO ()
-send listen cx latency extraLatency (time, isBusMsg, m)
-  | oSchedule target == Pre BundleStamp = sendBndl isBusMsg listen cx $ O.Bundle timeWithLatency [m]
-  | oSchedule target == Pre MessageStamp = sendO isBusMsg listen cx $ addtime m
+send :: Cx -> Double -> Double -> (Double, Bool, O.Message) -> IO ()
+send cx latency extraLatency (time, isBusMsg, m)
+  | oSchedule target == Pre BundleStamp = sendBndl isBusMsg cx $ O.Bundle timeWithLatency [m]
+  | oSchedule target == Pre MessageStamp = sendO isBusMsg cx $ addtime m
   | otherwise = do _ <- forkOS $ do now <- O.time
                                     threadDelay $ floor $ (timeWithLatency - now) * 1000000
-                                    sendO isBusMsg listen cx m
+                                    sendO isBusMsg cx m
                    return ()
     where addtime (O.Message mpath params) = O.Message mpath ((O.int32 sec):((O.int32 usec):params))
           ut = O.ntpr_to_ut timeWithLatency
