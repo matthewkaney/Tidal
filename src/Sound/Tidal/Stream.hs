@@ -23,9 +23,10 @@ module Sound.Tidal.Stream (module Sound.Tidal.Stream) where
 -}
 
 import           Control.Applicative ((<|>))
+import           Control.Concurrent.Async
 import           Control.Concurrent.MVar
 import           Control.Concurrent
-import           Control.Monad (forM_, when)
+import           Control.Monad (forM_, when, forever)
 import Data.Coerce (coerce)
 import qualified Data.Map.Strict as Map
 import           Data.Maybe (fromJust, fromMaybe, catMaybes, isJust)
@@ -218,6 +219,7 @@ startStream config oscmap
                                                                                 N.connect sock sockaddr
                                                           ) (oAddress target) (oPort target)
                                         bussesMV <- newMVar []
+                                        
                                         return $ Cx {cxUDP = u, cxAddr = remote_addr, cxBusAddr = remote_bus_addr, cxBusses = bussesMV, cxTarget = target, cxOSCs = os}                                        
                    ) oscmap
        let bpm = (coerce defaultCps) * 60 * (cBeatsPerCycle config)
@@ -240,7 +242,7 @@ startStream config oscmap
        -- Spawn a thread that acts as the clock
        _ <- T.clocked config sMapMV pMapMV actionsMV ac abletonLink
        -- Spawn a thread to handle OSC control messages
-       _ <- forkIO $ ctrlResponder 0 config stream
+       _ <- forkIO $ ctrlResponder stream
        return stream
 
 -- It only really works to handshake with one target at the moment..
@@ -666,29 +668,36 @@ openListener c
         catchAny :: IO a -> (E.SomeException -> IO a) -> IO a
         catchAny = E.catch
 
--- Listen to and act on OSC control messages
-ctrlResponder :: Int -> Config -> Stream -> IO ()
-ctrlResponder waits c (stream@(Stream {sListen = Just sock}))
-  = do ms <- recvMessagesTimeout 2 sock
-       if (null ms)
-         then do checkHandshake -- there was a timeout, check handshake
-                 ctrlResponder (waits+1) c stream
-         else do mapM_ act ms
-                 ctrlResponder 0 c stream
-     where
-        checkHandshake = do busses <- readMVar (sBusses stream)
-                            when (null busses) $ do when  (waits == 0) $ verbose c $ "Waiting for SuperDirt (v.1.7.2 or higher).."
-                                                    sendHandshakes stream
+-- Listen to and act on bus handshake messages
+busResponder :: Config -> O.UDP -> MVar [Int] -> IO ()
+busResponder c socket busVar = fst <$> concurrently receiveMessages (checkBusses 0)
+  where
+    handshake = O.Packet_Message $ O.Message "/dirt/handshake" []
+    
+    receiveMessages = forever (recvMessages socket >>= mapM act)
+    act (O.Message "/dirt/hello" _) = return [handshake]
+    act (O.Message "/dirt/handshake/reply" xs) = do prev <- swapMVar busVar $ bufferIndices xs
+                                                    -- Only report the first time..
+                                                    when (null prev) $ verbose c $ "Connected to SuperDirt."
+                                                    return []
+    act _ = return []
+    bufferIndices [] = []
+    bufferIndices (x:xs') | x == (O.ASCII_String $ O.ascii "&controlBusIndices") = catMaybes $ takeWhile isJust $ map O.datum_integral xs'
+                          | otherwise = bufferIndices xs'
+    
+    checkBusses :: Int -> IO ()
+    checkBusses waits = do O.upd_send_packet socket handshake
+                           threadDelay 2000000
+                           busses <- readMVar busVar
+                           when (null busses) $
+                             do when (waits == 0) $ verbose c $ "Waiting for SuperDirt (v.1.7.2 or higher).."
+                                checkBusses (waits + 1)
 
-        act (O.Message "/dirt/hello" _) = sendHandshakes stream
-        act (O.Message "/dirt/handshake/reply" xs) = do prev <- swapMVar (sBusses stream) $ bufferIndices xs
-                                                        -- Only report the first time..
-                                                        when (null prev) $ verbose c $ "Connected to SuperDirt."
-                                                        return ()
-          where 
-            bufferIndices [] = []
-            bufferIndices (x:xs') | x == (O.ASCII_String $ O.ascii "&controlBusIndices") = catMaybes $ takeWhile isJust $ map O.datum_integral xs'
-                                  | otherwise = bufferIndices xs'
+-- Listen to and act on OSC control messages
+ctrlResponder :: Stream -> IO ()
+ctrlResponder (stream@(Stream {sListen = Just sock}))
+  = forever (recvMessages sock >>= mapM act)
+      where
         -- External controller commands
         act (O.Message "/ctrl" (O.Int32 k:v:[]))
           = act (O.Message "/ctrl" [O.string $ show k,v])
@@ -726,13 +735,13 @@ ctrlResponder waits c (stream@(Stream {sListen = Just sock}))
         withID (O.ASCII_String k) func = func $ (ID . O.ascii_to_string) k
         withID (O.Int32 k) func = func $ (ID . show) k
         withID _ _ = return ()
-ctrlResponder _ _ _ = return ()
+ctrlResponder _ = return ()
 
 verbose :: Config -> String -> IO ()
 verbose c s = when (cVerbose c) $ putStrLn s
 
-recvMessagesTimeout :: (O.Transport t) => Double -> t -> IO [O.Message]
-recvMessagesTimeout n sock = fmap (maybe [] O.packetMessages) $ O.recvPacketTimeout n sock
+recvMessages :: O.UDP -> IO [O.Message]
+recvMessages sock = fmap O.packetMessages $ O.udp_recv_packet sock
 
 streamGetcps :: Stream -> IO Double
 streamGetcps s = do
