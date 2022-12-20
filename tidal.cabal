@@ -35,6 +35,7 @@ library
                        Sound.Tidal.Core
                        Sound.Tidal.ID
                        Sound.Tidal.Params
+                       Sound.Tidal.ParamTemplates
                        Sound.Tidal.ParseBP
                        Sound.Tidal.Pattern
                        Sound.Tidal.Scales
@@ -68,6 +69,7 @@ library
     , exceptions < 0.11
     , mtl >= 2.2
     , tidal-link == 1.0.1
+    , template-haskell > 2.0.0.0
 
 test-suite tests
   type: exitcode-stdio-1.0
