@@ -1,6 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Sound.Tidal.ParamTemplates where
 
+import Data.Map.Strict as Map
+
 import Sound.Tidal.Pattern
 
 import Language.Haskell.TH
