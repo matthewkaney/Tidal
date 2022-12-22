@@ -25,11 +25,11 @@ mkParam pTypeName pName opts = concat <$> sequence ([p, pt, pc, pct, pb, pr] ++ 
     pc  = if pTypeName == ''Double || pTypeName == ''Int || pTypeName == ''Note
           then mkFunc (pName ++ "Count") [t| String -> ControlPattern |]
                [e| \name -> pStateF pName name (maybe 0 (+1)) |]
-          else [d| |]
+          else return []
     pct = if pTypeName == ''Double || pTypeName == ''Int || pTypeName == ''Note
           then mkFunc (pName ++ "CountTo") [t| String -> Pattern Double -> Pattern ValueMap |]
                [e| \name ipat -> innerJoin $ (\i -> pStateF pName name (maybe 0 ((`mod'` i) . (+1)))) <$> ipat |]
-          else [d| |]
+          else return []
     pb  = mkFunc (pName ++ "bus") [t| Pattern Int -> Pattern $(pType) -> ControlPattern |] $
             if   elem NoBus opts
             then [e| \_ _ -> error $ "Control parameter '" ++ pName ++ "' can't be sent to a bus." |]
@@ -37,15 +37,20 @@ mkParam pTypeName pName opts = concat <$> sequence ([p, pt, pc, pct, pb, pr] ++ 
     pr  = if notElem NoBus opts
           then mkFunc (pName ++ "recv") [t| Pattern Int -> ControlPattern |]
                       [e| \busid -> pI ('^':pName) busid |]
-          else [d| |]
-    as  = map (mkParamAlias pName) [a | Alias a <- opts]
-
-mkParamAlias :: String -> String -> Q [Dec]
-mkParamAlias pName pAlias = concat <$> sequence [p, pb, pr]
-  where
-    p  = alias pName pAlias
-    pb = alias (pName ++ "bus") (pAlias ++ "bus")
-    pr = alias (pName ++ "recv") (pAlias ++ "recv")
+          else return []
+    as  = map mkParamAlias [a | Alias a <- opts]
+    mkParamAlias pAlias = concat <$> sequence [a, ab, ar]
+      where
+        a  = mkFunc pAlias [t| Pattern $(pType) -> ControlPattern |]
+                    (varE . mkName $ pName)
+        ab = if notElem NoBus opts
+             then mkFunc (pAlias ++ "bus") [t| Pattern Int -> Pattern $(pType) -> ControlPattern |]
+                  (varE . mkName $ pName ++ "bus")
+             else return []
+        ar = if notElem NoBus opts
+             then mkFunc (pAlias ++ "recv") [t| Pattern Int -> ControlPattern |]
+                  (varE . mkName $ pName ++ "recv")
+             else return []
 
 mkParamF :: String -> [ParamOpts] -> Q [Dec]
 mkParamF = mkParam ''Double
@@ -74,9 +79,9 @@ aliases full = concatMapM mkAlias
         fullName <- lookupValueName full
         case fullName
           of Just name -> reify name >>= mkAlias' short
-             Nothing -> return []
+             Nothing -> error $ "Can't alias `" ++ full ++ "`: Variable not in scope"
     mkAlias' :: String -> Info -> Q [Dec]
     mkAlias' short (VarI fullName fullType _) = 
         mkFunc short (return fullType) (varE fullName)
-    mkAlias' _ _ = return []
+    mkAlias' _ _ = error $ "Can't alias `" ++ full ++ "`: Not a variable"
     
