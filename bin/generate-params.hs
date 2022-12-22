@@ -15,17 +15,15 @@ toType "note" = "Pattern Note"
 toType "[word8]" = "Pattern [Word8]"
 
 toFunc :: String -> String
-toFunc "s" = "pS"
-toFunc "f" = "pF"
-toFunc "i" = "pI"
-toFunc "note" = "pN"
-toFunc "[word8]" = "pX"
+toFunc "s" = "mkParamS"
+toFunc "f" = "mkParamF"
+toFunc "i" = "mkParamI"
+toFunc "note" = "mkParam ''Note"
+toFunc "[word8]" = "mkParam ''[word8]"
 
 main :: IO ()
 main = do header
           putStr controls
-          putStr "\n\n\n-- aliases\n\n"
-          putStr aliases
 
 header :: IO ()
 header = do x <- openFile "params-header.hs" ReadMode
@@ -33,47 +31,16 @@ header = do x <- openFile "params-header.hs" ReadMode
             putStr y
 
 controls = intercalate "\n" $ map fs $ sortBy (compare `on` (\(_,x,_) -> x)) genericParams
-  where fs x = control x ++ bus x
-        control (t, name, desc) =
+  where fs (t, name, desc) =
           concat ["-- | " ++ desc ++ "\n",
-                  name, " :: ", toType t, " -> ControlPattern\n",
-                  name, " = ", toFunc t, " \"", name, "\"\n",
-                  name, "Take :: String -> [Double] -> ControlPattern\n",
-                  name, "Take name xs = pStateListF \"",name,"\" name xs\n",
-                  counters t name
-                 ]
-        counters "note" name = counters "f" name
-        counters "i" name = counters "f" name
-        counters "f" name = concat [name, "Count :: String -> ControlPattern\n",
-                                    name, "Count name = pStateF \"",name,"\" name (maybe 0 (+1))\n",
-                                    name, "CountTo :: String -> Pattern Double -> Pattern ValueMap\n",
-                                    name, "CountTo name ipat = innerJoin $ (\\i -> pStateF \"",name,"\" name (maybe 0 ((`mod'` i) . (+1)))) <$> ipat\n\n"
-                                   ]
-        counters _ _ = ""
-        bus (t,name,desc) | elem name nobus = concat [
-                              name, "bus :: Pattern Int -> ", toType t, " -> ControlPattern\n",
-                              name, "bus _ _ = error $ \"Control parameter '" ++ name ++ "' can't be sent to a bus.\"\n"
-                              ]
-                          | otherwise = 
-          concat [name, "bus :: Pattern Int -> ", toType t, " -> ControlPattern\n",
-                  name, "bus busid pat = (", toFunc t, " \"", name, "\" pat) # (pI \"^", name, "\" busid)\n",
-                  name, "recv :: Pattern Int -> ControlPattern\n",
-                  name, "recv busid = pI \"^", name, "\" busid\n"
-                 ]
-
-aliases = intercalate "\n" $ map fs $ sortBy (flip compare `on` (\(_,x,_) -> x)) aliasParams
-  where fs (t, from, to) =
-          concat [from, " :: ", toType t, " -> ControlPattern\n",
-                  from, " = ", to, "\n",
-                  if elem to nobus
-                  then ""
-                  else concat [
-                    from, "bus :: Pattern Int -> ", toType t, " -> ControlPattern\n",
-                    from, "bus = ", to, "bus\n",
-                    from, "recv :: Pattern Int -> ControlPattern\n",
-                    from, "recv = ", to, "recv\n"
-                    ]
-                 ]
+                  "$(", toFunc t, " \"", name, "\" [",
+                  intercalate ", " opts,
+                  "])\n"]
+          where
+            opts = bus ++ aliases
+            bus = if elem name nobus then ["NoBus"] else []
+            aliases = map (\(_, to, _) -> "Alias \"" ++ to ++ "\"")
+                      $ filter (\(_, _, from) -> from == name) aliasParams
 
 nobus = ["midinote",
          "note",
@@ -178,8 +145,10 @@ genericParams = [
   ("f", "loop", "loops the sample (from `begin` to `end`) the specified number of times."),
   ("f", "lophat", ""),
   ("f", "lsnare", ""),
-  ("note", "n", "The note or sample number to choose for a synth or sampleset"),
-  ("note", "note", "The note or pitch to play a sound or synth with"),
+  -- Moving these to params-header.hs, because some early functions depend on them
+  --   (and Template Haskell is more strict about the order things are defined)
+  -- ("note", "n", "The note or sample number to choose for a synth or sampleset"),
+  -- ("note", "note", "The note or pitch to play a sound or synth with"),
   ("f", "degree", ""),
   ("f", "mtranspose", ""),
   ("f", "ctranspose", ""),
