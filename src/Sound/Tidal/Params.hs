@@ -223,9 +223,6 @@ drumN "ct" = 85
 drumN "ms" = 86
 drumN "os" = 87
 drumN _ = 0
-
--- Generated params
-
 -- | a pattern of numbers that speed up (or slow down) samples while they play.
 $(mkParamF "accelerate" [NoBus])
 
@@ -233,7 +230,7 @@ $(mkParamF "accelerate" [NoBus])
 $(mkParamF "amp" [])
 
 -- | 
-$(mkParam ''[word8] "array" [NoBus])
+$(mkParamX "array" [NoBus])
 
 -- | a pattern of numbers to specify the attack time (in seconds) of an envelope applied to each sample.
 $(mkParamF "attack" [Alias "att"])

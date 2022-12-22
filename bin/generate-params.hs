@@ -19,7 +19,7 @@ toFunc "s" = "mkParamS"
 toFunc "f" = "mkParamF"
 toFunc "i" = "mkParamI"
 toFunc "note" = "mkParam ''Note"
-toFunc "[word8]" = "mkParam ''[word8]"
+toFunc "[word8]" = "mkParamX"
 
 main :: IO ()
 main = do header

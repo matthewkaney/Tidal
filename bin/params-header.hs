@@ -223,6 +223,3 @@ drumN "ct" = 85
 drumN "ms" = 86
 drumN "os" = 87
 drumN _ = 0
-
--- Generated params
-

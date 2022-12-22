@@ -2,10 +2,10 @@
 module Sound.Tidal.ParamTemplates where
 
 import Control.Monad
+import Data.Word (Word8)
+import Language.Haskell.TH
 
 import Sound.Tidal.Pattern
-
-import Language.Haskell.TH
 
 data ParamOpts = NoBus | Alias String
                    deriving ( Eq )
@@ -55,6 +55,11 @@ mkParamI = mkParam ''Int
 
 mkParamS :: String -> [ParamOpts] -> Q [Dec]
 mkParamS = mkParam ''String
+
+type Data = [Word8]
+
+mkParamX :: String -> [ParamOpts] -> Q [Dec]
+mkParamX = mkParam ''Data
 
 alias :: String -> String -> Q [Dec]
 alias full short = aliases full [short]
