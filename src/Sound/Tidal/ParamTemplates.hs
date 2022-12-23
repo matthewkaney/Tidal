@@ -79,9 +79,9 @@ aliases full = concatMapM mkAlias
         fullName <- lookupValueName full
         case fullName
           of Just name -> reify name >>= mkAlias' short
-             Nothing -> error $ "Can't alias `" ++ full ++ "`: Variable not in scope"
+             Nothing -> fail $ "Can't alias `" ++ full ++ "`: Variable not in scope"
     mkAlias' :: String -> Info -> Q [Dec]
     mkAlias' short (VarI fullName fullType _) = 
         mkFunc short (return fullType) (varE fullName)
-    mkAlias' _ _ = error $ "Can't alias `" ++ full ++ "`: Not a variable"
+    mkAlias' _ _ = fail $ "Can't alias `" ++ full ++ "`: Not a variable"
     
