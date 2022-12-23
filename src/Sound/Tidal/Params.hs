@@ -223,6 +223,7 @@ drumN "ct" = 85
 drumN "ms" = 86
 drumN "os" = 87
 drumN _ = 0
+
 -- | a pattern of numbers that speed up (or slow down) samples while they play.
 $(mkParamF "accelerate" [NoBus])
 

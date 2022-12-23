@@ -2,6 +2,8 @@
 module Sound.Tidal.ParamTemplates where
 
 import Control.Monad
+import Data.List
+import Data.Maybe
 import Data.Word (Word8)
 import Language.Haskell.TH
 
@@ -15,7 +17,7 @@ mkFunc nameS qType val = (:) <$> sigD name qType <*> [d| $(varP name) = $(val) |
   where name = mkName nameS
 
 mkParam :: Name -> String -> [ParamOpts] -> Q [Dec]
-mkParam pTypeName pName opts = concat <$> sequence ([p, pt, pc, pct, pb, pr] ++ as)
+mkParam pTypeName pName opts = (reverse . concat) <$> sequence ([p, pt, pc, pct, pb, pr] ++ as)
   where
     pType = (pure . ConT) pTypeName :: Q Type
     p   = mkFunc pName [t| Pattern $(pType) -> ControlPattern |]
@@ -70,8 +72,18 @@ alias :: String -> String -> Q [Dec]
 alias full short = aliases full [short]
 
 aliases :: String -> [String] -> Q [Dec]
-aliases full = concatMapM mkAlias
+aliases full as = updateDoc >> (concatMapM mkAlias as)
   where
+    updateDoc :: Q ()
+    updateDoc = do
+      let nameLoc = DeclDoc (mkName full)
+      maybeDoc <- getDoc nameLoc
+      let doc = (fromMaybe "" maybeDoc)
+                ++ "\n\n/(Also known as "
+                ++ intercalate ", "
+                   (map (\a -> "__@" ++ a ++ "@__") as)
+                ++ ")/"
+      putDoc nameLoc doc
     concatMapM :: Monad m => (a -> m [b]) -> [a] -> m [b]
     concatMapM f xs = liftM concat (mapM f xs)
     mkAlias :: String -> Q [Dec]
