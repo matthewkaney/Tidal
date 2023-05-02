@@ -604,43 +604,38 @@ streamReplace :: Stream -> ID -> ControlSignal -> IO ()
 streamReplace s k !pat
   = modifyMVar_ (sActionsMV s) (\actions -> return $ (T.StreamReplace k pat) : actions)
 
-streamMute :: Stream -> ID -> IO ()
-streamMute s k = withPatIds s [k] (\x -> x {mute = True})
+withPatId :: (PlayState -> PlayState) -> Stream -> ID -> IO ()
+withPatId f s k = modifyMVar_ (sPMapMV s) $ return . Map.update (Just . f) (fromID k)
 
-streamMutes :: Stream -> [ID] -> IO ()
-streamMutes s ks = withPatIds s ks (\x -> x {mute = True})
+withAllPats :: (PlayState -> PlayState) -> Stream -> IO ()
+withAllPats f s = modifyMVar_ (sPMapMV s) $ return . fmap f
+
+streamMute :: Stream -> ID -> IO ()
+streamMute = withPatId (\x -> x {mute = True})
 
 streamUnmute :: Stream -> ID -> IO ()
-streamUnmute s k = withPatIds s [k] (\x -> x {mute = False})
+streamUnmute = withPatId (\x -> x {mute = False})
 
 streamSolo :: Stream -> ID -> IO ()
-streamSolo s k = withPatIds s [k] (\x -> x {solo = True})
+streamSolo = withPatId (\x -> x {solo = True})
 
 streamUnsolo :: Stream -> ID -> IO ()
-streamUnsolo s k = withPatIds s [k] (\x -> x {solo = False})
+streamUnsolo = withPatId (\x -> x {solo = False})
 
-withPatIds :: Stream -> [ID] -> (PlayState -> PlayState) -> IO ()
-withPatIds s ks f
-  = do playMap <- takeMVar $ sPMapMV s
-       let pMap' = foldr (Map.update (\x -> Just $ f x)) playMap (map fromID ks)
-       putMVar (sPMapMV s) pMap'
-       return ()
-
--- TODO - is there a race condition here?
 streamMuteAll :: Stream -> IO ()
-streamMuteAll s = modifyMVar_ (sPMapMV s) $ return . fmap (\x -> x {mute = True})
-
-streamHush :: Stream -> IO ()
-streamHush s = modifyMVar_ (sPMapMV s) $ return . fmap (\x -> x {pattern = silence, history = silence:history x})
+streamMuteAll = withAllPats (\x -> x {mute = True})
 
 streamUnmuteAll :: Stream -> IO ()
-streamUnmuteAll s = modifyMVar_ (sPMapMV s) $ return . fmap (\x -> x {mute = False})
+streamUnmuteAll = withAllPats (\x -> x {mute = False})
 
 streamUnsoloAll :: Stream -> IO ()
-streamUnsoloAll s = modifyMVar_ (sPMapMV s) $ return . fmap (\x -> x {solo = False})
+streamUnsoloAll = withAllPats (\x -> x {solo = False})
 
 streamSilence :: Stream -> ID -> IO ()
-streamSilence s k = withPatIds s [k] (\x -> x {pattern = silence, history = silence:history x})
+streamSilence = withPatId (\x -> x {pattern = silence, history = silence:history x})
+
+streamHush :: Stream -> IO ()
+streamHush = withAllPats (\x -> x {pattern = silence, history = silence:history x})
 
 streamAll :: Stream -> (ControlSignal -> ControlSignal) -> IO ()
 streamAll s f = do _ <- swapMVar (sGlobalFMV s) f
