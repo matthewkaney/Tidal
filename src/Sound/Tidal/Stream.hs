@@ -598,42 +598,59 @@ streamList s = do pMap <- readMVar (sPMapMV s)
         showKV False (k, (PlayState {solo = False})) = k ++ "\n"
         showKV False (k, _)                          = "(" ++ k ++ ") - muted\n"
 
+-- * Pattern playback functions
+--
+-- $playbackFunctions
+--
+-- These functions control the playback of individual patterns
+
 -- Evaluation of pat is forced so exceptions are picked up here, before replacing the existing pattern.
 
 streamReplace :: Stream -> ID -> ControlSignal -> IO ()
 streamReplace s k !pat
   = modifyMVar_ (sActionsMV s) (\actions -> return $ (T.StreamReplace k pat) : actions)
 
+---- Internal convenience methods
 withPatId :: (PlayState -> PlayState) -> Stream -> ID -> IO ()
 withPatId f s k = modifyMVar_ (sPMapMV s) $ return . Map.update (Just . f) (fromID k)
 
 withAllPats :: (PlayState -> PlayState) -> Stream -> IO ()
 withAllPats f s = modifyMVar_ (sPMapMV s) $ return . fmap f
+----
 
+-- | Mute the pattern with the specified ID
 streamMute :: Stream -> ID -> IO ()
 streamMute = withPatId (\x -> x {mute = True})
 
+-- | Unmute the pattern with the specified ID
 streamUnmute :: Stream -> ID -> IO ()
 streamUnmute = withPatId (\x -> x {mute = False})
 
+-- | Solo the pattern with the specified ID
 streamSolo :: Stream -> ID -> IO ()
 streamSolo = withPatId (\x -> x {solo = True})
 
+-- | Unsolo the pattern with the specified ID
 streamUnsolo :: Stream -> ID -> IO ()
 streamUnsolo = withPatId (\x -> x {solo = False})
 
+-- | Mute all currently-playing patterns
 streamMuteAll :: Stream -> IO ()
 streamMuteAll = withAllPats (\x -> x {mute = True})
 
+-- | Unmute all currently-playing patterns
 streamUnmuteAll :: Stream -> IO ()
 streamUnmuteAll = withAllPats (\x -> x {mute = False})
 
+-- | Unsolo all currently-playing patterns
 streamUnsoloAll :: Stream -> IO ()
 streamUnsoloAll = withAllPats (\x -> x {solo = False})
 
+-- | Silence the pattern with the specified ID (equivalent to overwriting the pattern with @silence@)
 streamSilence :: Stream -> ID -> IO ()
 streamSilence = withPatId (\x -> x {pattern = silence, history = silence:history x})
 
+-- | Silence all currently-playing patterns
 streamHush :: Stream -> IO ()
 streamHush = withAllPats (\x -> x {pattern = silence, history = silence:history x})
 
