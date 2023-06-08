@@ -74,7 +74,8 @@ data Stream = Stream {sConfig    :: Config,
                       sPMapMV    :: MVar PlayMap,
                       sActionsMV :: MVar [T.TempoAction],
                       sGlobalFMV :: MVar (ControlSignal -> ControlSignal),
-                      sCxs       :: [Cx]
+                      sCxs       :: [Cx], -- DEPRECATED
+                      sTargets   :: MVar TargetMap
                      }
 
 data Cx = Cx {cxTarget  :: OldTarget,
@@ -204,6 +205,7 @@ startStream config oscmap
        bussesMV <- newMVar []
        globalFMV <- newMVar id
        actionsMV <- newEmptyMVar
+       targetsMV <- newMVar Map.empty
 
        tidal_status_string >>= verbose config
        verbose config $ "Listening for external controls on " ++ cCtrlAddr config ++ ":" ++ show (cCtrlPort config)
@@ -229,7 +231,8 @@ startStream config oscmap
                             sPMapMV = pMapMV,
                             sActionsMV = actionsMV,
                             sGlobalFMV = globalFMV,
-                            sCxs = cxs
+                            sCxs = cxs,
+                            sTargets = targetsMV
                            }
        sendHandshakes stream
        let ac = T.ActionHandler {
@@ -242,6 +245,30 @@ startStream config oscmap
        -- Spawn a thread to handle OSC control messages
        _ <- forkIO $ ctrlResponder 0 config stream
        return stream
+
+streamAddTarget :: Target a => Stream -> a -> IO ()
+streamAddTarget s target = modifyMVar_ (sTargets s) addToMap
+  where 
+    newID :: ID
+    newID = targetID target
+    addToMap :: TargetMap -> IO TargetMap
+    addToMap targets
+      = do -- Start new target (TODO: catch errors and don't add)
+           targetStart target
+           -- Stop old target (if we're replacing a target with the same ID)
+           mapM_ targetStop (Map.lookup newID targets)
+           return (Map.insert newID (GenericTarget target) targets)
+
+streamRemoveTarget :: Target a => Stream -> a -> IO ()
+streamRemoveTarget s target = modifyMVar_ (sTargets s) removeFromMap
+  where
+    newID :: ID
+    newID = targetID target
+    removeFromMap :: TargetMap -> IO TargetMap
+    removeFromMap targets
+      = do -- Stop old target if it's actually in the map
+           mapM_ targetStop (Map.lookup newID targets)
+           return (Map.delete newID targets)
 
 -- It only really works to handshake with one target at the moment..
 sendHandshakes :: Stream -> IO ()

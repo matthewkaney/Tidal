@@ -20,6 +20,8 @@
 
 module Sound.Tidal.Target where
 
+import Data.Map.Strict (Map)
+
 import Sound.Tidal.ID
 import Sound.Tidal.StreamTypes
 
@@ -61,3 +63,6 @@ instance Target GenericTarget where
   targetTick (GenericTarget a) = targetTick a
 
   targetStop (GenericTarget a) = targetStop a
+
+-- |A collection of @GenericTarget@ instances
+type TargetMap = Map ID GenericTarget
