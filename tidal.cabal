@@ -55,6 +55,7 @@ library
                        -- Sound.Tidal.Simple
                        Sound.Tidal.Stream
                        Sound.Tidal.StreamTypes
+                       Sound.Tidal.Target
                        Sound.Tidal.Tempo
                        Sound.Tidal.Time
                        Sound.Tidal.Types

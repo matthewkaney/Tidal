@@ -84,7 +84,7 @@ import System.IO (hSetEncoding, stdout, utf8)
 class Tidally where
   tidal :: Stream
 
-type OscMap = [(Target, [OSC])]
+type OscMap = [(OldTarget, [OSC])]
 
 -- | A reasonable config.
 mkConfig :: Config

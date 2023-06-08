@@ -54,6 +54,7 @@ import           Sound.Tidal.Pattern      (_early, silence, stack)
 import           Sound.Tidal.Show         ()
 import           Sound.Tidal.Signal.Base
 import           Sound.Tidal.Signal.Event
+import           Sound.Tidal.Target
 import qualified Sound.Tidal.Tempo        as T
 import           Sound.Tidal.Types
 import           Sound.Tidal.Utils        ((!!!))
@@ -76,7 +77,7 @@ data Stream = Stream {sConfig    :: Config,
                       sCxs       :: [Cx]
                      }
 
-data Cx = Cx {cxTarget  :: Target,
+data Cx = Cx {cxTarget  :: OldTarget,
               cxUDP     :: O.Udp,
               cxOSCs    :: [OSC],
               cxAddr    :: N.AddrInfo,
@@ -92,15 +93,15 @@ data Schedule = Pre StampStyle
               | Live
   deriving (Eq, Show)
 
-data Target = Target {oName      :: String,
-                      oAddress   :: String,
-                      oPort      :: Int,
-                      oBusPort   :: Maybe Int,
-                      oLatency   :: Double,
-                      oWindow    :: Maybe Arc,
-                      oSchedule  :: Schedule,
-                      oHandshake :: Bool
-                     }
+data OldTarget = OldTarget {oName      :: String,
+                            oAddress   :: String,
+                            oPort      :: Int,
+                            oBusPort   :: Maybe Int,
+                            oLatency   :: Double,
+                            oWindow    :: Maybe Arc,
+                            oSchedule  :: Schedule,
+                            oHandshake :: Bool
+                           }
                  deriving Show
 
 data Args = Named {requiredArgs :: [String]}
@@ -112,19 +113,6 @@ data OSC = OSC {path :: String,
                }
          | OSCContext {path :: String}
          deriving Show
-
-data ProcessedEvent =
-  ProcessedEvent {
-    peHasOnset         :: Bool,
-    peEvent            :: Event ValueMap,
-    peCps              :: Link.BPM,
-    peDelta            :: Link.Micros,
-    peCycle            :: Time,
-    peOnWholeOrPart    :: Link.Micros,
-    peOnWholeOrPartOsc :: O.Time,
-    peOnPart           :: Link.Micros,
-    peOnPartOsc        :: O.Time
-  }
 
 sDefault :: String -> Maybe Value
 sDefault x = Just $ VS x
@@ -142,30 +130,30 @@ xDefault x = Just $ VX x
 required :: Maybe Value
 required = Nothing
 
-superdirtTarget :: Target
-superdirtTarget = Target {oName = "SuperDirt",
-                          oAddress = "127.0.0.1",
-                          oPort = 57120,
-                          oBusPort = Just 57110,
-                          oLatency = 0.2,
-                          oWindow = Nothing,
-                          oSchedule = Pre BundleStamp,
-                          oHandshake = True
-                         }
+superdirtTarget :: OldTarget
+superdirtTarget = OldTarget {oName = "SuperDirt",
+                             oAddress = "127.0.0.1",
+                             oPort = 57120,
+                             oBusPort = Just 57110,
+                             oLatency = 0.2,
+                             oWindow = Nothing,
+                             oSchedule = Pre BundleStamp,
+                             oHandshake = True
+                            }
 
 superdirtShape :: OSC
 superdirtShape = OSC "/dirt/play" $ Named {requiredArgs = ["s"]}
 
-dirtTarget :: Target
-dirtTarget = Target {oName = "Dirt",
-                     oAddress = "127.0.0.1",
-                     oPort = 7771,
-                     oBusPort = Nothing,
-                     oLatency = 0.02,
-                     oWindow = Nothing,
-                     oSchedule = Pre MessageStamp,
-                     oHandshake = False
-                    }
+dirtTarget :: OldTarget
+dirtTarget = OldTarget {oName = "Dirt",
+                        oAddress = "127.0.0.1",
+                        oPort = 7771,
+                        oBusPort = Nothing,
+                        oLatency = 0.02,
+                        oWindow = Nothing,
+                        oSchedule = Pre MessageStamp,
+                        oHandshake = False
+                       }
 
 dirtShape :: OSC
 dirtShape = OSC "/play" $ ArgList [("cps", fDefault 0),
@@ -209,7 +197,7 @@ defaultCps = 0.5625
 -- Start an instance of Tidal
 -- Spawns a thread within Tempo that acts as the clock
 -- Spawns a thread that listens to and acts on OSC control messages
-startStream :: Config -> [(Target, [OSC])] -> IO Stream
+startStream :: Config -> [(OldTarget, [OSC])] -> IO Stream
 startStream config oscmap
   = do sMapMV <- newMVar Map.empty
        pMapMV <- newMVar Map.empty
@@ -284,10 +272,10 @@ resolve host port = do let hints = N.defaultHints { N.addrSocketType = N.Stream 
                        return addr
 
 -- Start an instance of Tidal with superdirt OSC
-startTidal :: Target -> Config -> IO Stream
+startTidal :: OldTarget -> Config -> IO Stream
 startTidal target config = startStream config [(target, [superdirtShape])]
 
-startMulti :: [Target] -> Config -> IO ()
+startMulti :: [OldTarget] -> Config -> IO ()
 startMulti _ _ = hPutStrLn stderr $ "startMulti has been removed, please check the latest documentation on tidalcycles.org"
 
 toDatum :: Value -> O.Datum
