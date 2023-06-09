@@ -34,12 +34,6 @@ class Target a where
   -- |attached to a stream.
   targetID :: a -> ID
 
-  -- |Start this target. This will be called when the target is added
-  -- |to a stream. Asyncronous operations (such as opening ports, etc)
-  -- |can happen here.
-  targetStart :: a -> IO ()
-  targetStart _ = return ()
-
   -- |Dispatch an event. This takes the processed events from the current
   -- |tick of the stream and performs some action with them.
   targetTick :: a -> [ProcessedEvent] -> IO ()
@@ -57,8 +51,6 @@ data GenericTarget = forall a. Target a => GenericTarget a
 -- |For convenience, @GenericTarget@ also behaves like a target
 instance Target GenericTarget where
   targetID (GenericTarget a) = targetID a
-
-  targetStart (GenericTarget a) = targetStart a
 
   targetTick (GenericTarget a) = targetTick a
 

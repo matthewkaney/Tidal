@@ -253,9 +253,7 @@ streamAddTarget s target = modifyMVar_ (sTargets s) addToMap
     newID = targetID target
     addToMap :: TargetMap -> IO TargetMap
     addToMap targets
-      = do -- Start new target (TODO: catch errors and don't add)
-           targetStart target
-           -- Stop old target (if we're replacing a target with the same ID)
+      = do -- Stop old target (if we're replacing a target with the same ID)
            mapM_ targetStop (Map.lookup newID targets)
            return (Map.insert newID (GenericTarget target) targets)
 
